@@ -1,0 +1,11 @@
+Name: gateway
+Host: 0.0.0.0
+Port: 8080
+Mode: dev
+RedisAddr: localhost:6379
+RedisPass: ""
+AuthSvcAddr: localhost:8082
+UserSvcAddr: localhost:8081
+VehicleSvcAddr: localhost:8083
+TelemetrySvcAddr: localhost:8084
+DispatchSvcAddr: localhost:8085

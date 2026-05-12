@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package vehicle.v1;
+
+option go_package = "github.com/aicong/mine-dispatch/proto/vehicle/v1;vehiclev1";
+
+enum VehicleType {
+  VEHICLE_TYPE_UNSPECIFIED = 0;
+  VEHICLE_TYPE_MINING_TRUCK = 1;
+  VEHICLE_TYPE_EXCAVATOR = 2;
+  VEHICLE_TYPE_LOADER = 3;
+  VEHICLE_TYPE_BULLDOZER = 4;
+}
+
+enum VehicleStatus {
+  VEHICLE_STATUS_UNSPECIFIED = 0;
+  VEHICLE_STATUS_IDLE = 1;
+  VEHICLE_STATUS_LOADING = 2;
+  VEHICLE_STATUS_HAULING = 3;
+  VEHICLE_STATUS_DUMPING = 4;
+  VEHICLE_STATUS_MAINTENANCE = 5;
+  VEHICLE_STATUS_OFFLINE = 6;
+}
+
+message Vehicle {
+  uint64 id = 1;
+  string plate = 2;
+  VehicleType type = 3;
+  VehicleStatus status = 4;
+  double latitude = 5;
+  double longitude = 6;
+  double fuel_level = 7;
+  uint64 mine_id = 8;
+  uint64 driver_id = 9;
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+message CreateVehicleRequest {
+  string plate = 1;
+  VehicleType type = 2;
+  uint64 mine_id = 3;
+}
+
+message GetVehicleRequest { uint64 id = 1; }
+
+message UpdateVehicleRequest {
+  uint64 id = 1;
+  VehicleStatus status = 2;
+  uint64 driver_id = 3;
+}
+
+message DeleteVehicleRequest { uint64 id = 1; }
+
+message ListVehicleRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  VehicleType type = 3;
+  VehicleStatus status = 4;
+  uint64 mine_id = 5;
+}
+
+message VehicleResponse {
+  int32 code = 1;
+  string message = 2;
+  Vehicle data = 3;
+}
+
+message VehicleListResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated Vehicle data = 3;
+  int64 total = 4;
+}
+
+service VehicleService {
+  rpc CreateVehicle(CreateVehicleRequest) returns (VehicleResponse);
+  rpc GetVehicle(GetVehicleRequest) returns (VehicleResponse);
+  rpc UpdateVehicle(UpdateVehicleRequest) returns (VehicleResponse);
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (VehicleResponse);
+  rpc ListVehicle(ListVehicleRequest) returns (VehicleListResponse);
+}

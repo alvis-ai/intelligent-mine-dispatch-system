@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package dispatch.v1;
+
+option go_package = "github.com/aicong/mine-dispatch/proto/dispatch/v1;dispatchv1";
+
+message DispatchTask {
+  uint64 id = 1;
+  uint64 vehicle_id = 2;
+  uint64 load_point_id = 3;
+  uint64 dump_point_id = 4;
+  string material = 5;
+  double load_lat = 6;
+  double load_lon = 7;
+  double dump_lat = 8;
+  double dump_lon = 9;
+  string status = 10;
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message AssignTaskRequest {
+  uint64 vehicle_id = 1;
+  uint64 load_point_id = 2;
+  uint64 dump_point_id = 3;
+  string material = 4;
+  string algorithm = 5;
+}
+
+message GetTaskRequest { uint64 id = 1; }
+
+message CompleteTaskRequest { uint64 id = 1; }
+
+message ListTaskRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;
+  uint64 vehicle_id = 4;
+}
+
+message TaskResponse {
+  int32 code = 1;
+  string message = 2;
+  DispatchTask data = 3;
+}
+
+message TaskListResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated DispatchTask data = 3;
+  int64 total = 4;
+}
+
+service DispatchService {
+  rpc AssignTask(AssignTaskRequest) returns (TaskResponse);
+  rpc GetTask(GetTaskRequest) returns (TaskResponse);
+  rpc CompleteTask(CompleteTaskRequest) returns (TaskResponse);
+  rpc ListTask(ListTaskRequest) returns (TaskListResponse);
+}

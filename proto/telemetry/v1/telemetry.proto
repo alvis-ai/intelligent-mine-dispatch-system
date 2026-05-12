@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package telemetry.v1;
+
+option go_package = "github.com/aicong/mine-dispatch/proto/telemetry/v1;telemetryv1";
+
+message LocationData {
+  uint64 vehicle_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double altitude = 4;
+  double speed = 5;
+  double heading = 6;
+  int64 timestamp = 7;
+}
+
+message ReportLocationRequest { LocationData location = 1; }
+
+message GetVehicleLocationRequest { uint64 vehicle_id = 1; }
+
+message GetVehicleLocationResponse {
+  int32 code = 1;
+  string message = 2;
+  LocationData location = 3;
+}
+
+message GetNearbyVehiclesRequest {
+  double latitude = 1;
+  double longitude = 2;
+  double radius_km = 3;
+}
+
+message NearbyVehicle {
+  uint64 vehicle_id = 1;
+  string plate = 2;
+  double latitude = 3;
+  double longitude = 4;
+  double speed = 5;
+  double distance_km = 6;
+}
+
+message GetNearbyVehiclesResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated NearbyVehicle vehicles = 3;
+}
+
+message ReportLocationResponse { int32 code = 1; string message = 2; }
+
+service TelemetryService {
+  rpc ReportLocation(ReportLocationRequest) returns (ReportLocationResponse);
+  rpc GetVehicleLocation(GetVehicleLocationRequest) returns (GetVehicleLocationResponse);
+  rpc GetNearbyVehicles(GetNearbyVehiclesRequest) returns (GetNearbyVehiclesResponse);
+}

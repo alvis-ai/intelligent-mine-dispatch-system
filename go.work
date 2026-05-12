@@ -1,0 +1,12 @@
+go 1.25.3
+
+use (
+	./gateway
+	./pkg
+	./proto
+	./services/auth-service
+	./services/dispatch-service
+	./services/telemetry-service
+	./services/user-service
+	./services/vehicle-service
+)
