@@ -1,0 +1,12 @@
+Name: gateway
+Host: 0.0.0.0
+Port: 8080
+Mode: dev
+RedisAddr: redis:6379
+RedisPass: ""
+AuthSvcAddr: auth-service:8082
+UserSvcAddr: user-service:8081
+VehicleSvcAddr: vehicle-service:8083
+TelemetrySvcAddr: telemetry-service:8084
+DispatchSvcAddr: dispatch-service:8085
+PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable

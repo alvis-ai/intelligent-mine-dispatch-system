@@ -1,0 +1,5 @@
+Name: vehicle-service
+ListenOn: 0.0.0.0:8083
+Mode: dev
+
+PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable

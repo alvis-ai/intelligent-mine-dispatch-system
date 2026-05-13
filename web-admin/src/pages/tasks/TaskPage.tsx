@@ -22,18 +22,6 @@ const STATUS_MAP: Record<string, { color: string; text: string }> = {
   cancelled: { color: 'error', text: '已取消' },
 };
 
-const LOAD_POINTS = [
-  { value: 1, label: '装载点A' },
-  { value: 2, label: '装载点B' },
-  { value: 3, label: '装载点C' },
-];
-
-const DUMP_POINTS = [
-  { value: 1, label: '卸载点C' },
-  { value: 2, label: '卸载点D' },
-  { value: 3, label: '卸载点E' },
-];
-
 const ALGORITHMS = [
   { value: 'fifo', label: 'FIFO (先进先出)' },
   { value: 'nearest_first', label: '最近优先' },
@@ -43,6 +31,8 @@ const ALGORITHMS = [
 export default function TaskPage() {
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [vehicles, setVehicles] = useState<{ value: number; label: string }[]>([]);
+  const [loadPoints, setLoadPoints] = useState<{ value: number; label: string }[]>([]);
+  const [dumpPoints, setDumpPoints] = useState<{ value: number; label: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -73,9 +63,25 @@ export default function TaskPage() {
     }
   };
 
+  const fetchPoints = async () => {
+    try {
+      const res = await apiClient.get('/api/v1/loading-points');
+      const all: any[] = res.data.data || [];
+      setLoadPoints(
+        all.filter((p) => p.type === 'loading').map((p) => ({ value: p.id, label: p.name }))
+      );
+      setDumpPoints(
+        all.filter((p) => p.type === 'dumping').map((p) => ({ value: p.id, label: p.name }))
+      );
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
     fetchVehicles();
+    fetchPoints();
   }, []);
 
   const handleCreate = async () => {
@@ -108,7 +114,7 @@ export default function TaskPage() {
   };
 
   const pointLabel = (id: number) =>
-    [...LOAD_POINTS, ...DUMP_POINTS].find((p) => p.value === id)?.label || `点${id}`;
+    [...loadPoints, ...dumpPoints].find((p) => p.value === id)?.label || `点${id}`;
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 100 },
@@ -159,10 +165,10 @@ export default function TaskPage() {
             <Select placeholder="选择车辆" options={vehicles} />
           </Form.Item>
           <Form.Item label="装载点" name="load_point_id" rules={[{ required: true, message: '请选择装载点' }]}>
-            <Select placeholder="选择装载点" options={LOAD_POINTS} />
+            <Select placeholder="选择装载点" options={loadPoints} />
           </Form.Item>
           <Form.Item label="卸载点" name="dump_point_id" rules={[{ required: true, message: '请选择卸载点' }]}>
-            <Select placeholder="选择卸载点" options={DUMP_POINTS} />
+            <Select placeholder="选择卸载点" options={dumpPoints} />
           </Form.Item>
           <Form.Item label="调度算法" name="algorithm" initialValue="fifo">
             <Select options={ALGORITHMS} />

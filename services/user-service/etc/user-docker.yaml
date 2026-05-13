@@ -1,0 +1,8 @@
+Name: user-service
+ListenOn: 0.0.0.0:8081
+Mode: dev
+
+PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable
+RedisAddr: redis:6379
+RedisPass: ""
+JwtSecret: mine-dispatch-secret-key

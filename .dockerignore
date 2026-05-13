@@ -1,0 +1,12 @@
+.git/
+.gitignore
+.claude/
+.agents/
+.DS_Store
+*.png
+skills-lock.json
+node_modules/
+web-admin/node_modules/
+web-admin/dist/
+deploy/docker/pgdata/
+/tmp/

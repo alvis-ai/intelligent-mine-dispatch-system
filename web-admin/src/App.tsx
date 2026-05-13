@@ -7,6 +7,8 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import VehiclePage from './pages/vehicles/VehiclePage';
 import MapPage from './pages/map/MapPage';
 import TaskPage from './pages/tasks/TaskPage';
+import LoadingPointPage from './pages/loadingpoints/LoadingPointPage';
+import VehicleTypePage from './pages/vehicletypes/VehicleTypePage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token');
@@ -32,6 +34,8 @@ export default function App() {
             <Route path="vehicles" element={<VehiclePage />} />
             <Route path="map" element={<MapPage />} />
             <Route path="tasks" element={<TaskPage />} />
+            <Route path="loading-points" element={<LoadingPointPage />} />
+            <Route path="vehicle-types" element={<VehicleTypePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

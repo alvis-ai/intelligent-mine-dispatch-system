@@ -1,13 +1,12 @@
 #!/bin/bash
 # 矿山智能调度系统 - 完整 API 自动化测试
-set -e
 GATEWAY="http://localhost:8080"
 PASS=0
 FAIL=0
 
 GREEN='\033[0;32m'; RED='\033[0;31m'; NC='\033[0m'
 
-api() { curl -s -o /tmp/api_resp.json -w '%{http_code}' "$@"; cat /tmp/api_resp.json; }
+api() { curl -s -o /tmp/api_resp.json -w '%{http_code}' "$@"; }
 ok() { echo -e "  ${GREEN}✓${NC} $1"; PASS=$((PASS+1)); }
 fail() { echo -e "  ${RED}✗${NC} $1"; FAIL=$((FAIL+1)); }
 assert_code() { local c=$(api "$@"); [ "$c" = "200" ] && ok "$2" || fail "$2 (HTTP $c)"; }

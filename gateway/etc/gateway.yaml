@@ -9,3 +9,4 @@ UserSvcAddr: localhost:8081
 VehicleSvcAddr: localhost:8083
 TelemetrySvcAddr: localhost:8084
 DispatchSvcAddr: localhost:8085
+PostgresDSN: postgres://postgres:postgres@localhost:5432/mine_dispatch?sslmode=disable

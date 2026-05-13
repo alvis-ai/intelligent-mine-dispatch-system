@@ -1,0 +1,7 @@
+Name: telemetry-service
+ListenOn: 0.0.0.0:8084
+Mode: dev
+
+RedisAddr: redis:6379
+RedisPass: ""
+RedisDB: 0

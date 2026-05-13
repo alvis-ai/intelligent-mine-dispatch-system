@@ -13,6 +13,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -28,6 +30,7 @@ type GatewayConfig struct {
 	VehicleSvcAddr   string
 	TelemetrySvcAddr string
 	DispatchSvcAddr  string
+	PostgresDSN  string
 }
 
 func proxyHandler(targetURL string) http.HandlerFunc {
@@ -93,6 +96,17 @@ func main() {
 	handler.RegisterDispatchRoutes(server, dispatchConn)
 	wsHub := handler.NewWSHub(rdb)
 	handler.RegisterWSRoute(server, wsHub)
+
+	// Init GORM for management APIs
+	var mgmtDB *gorm.DB
+	if c.PostgresDSN != "" {
+		var err error
+		mgmtDB, err = gorm.Open(postgres.Open(c.PostgresDSN), &gorm.Config{})
+		if err != nil {
+			fmt.Printf("Warning: failed to connect management DB: %v\n", err)
+		}
+	}
+	handler.RegisterManagementRoutes(server, mgmtDB)
 
 	fmt.Printf("Starting gateway on %s:%d\n", c.Host, c.Port)
 	server.Start()

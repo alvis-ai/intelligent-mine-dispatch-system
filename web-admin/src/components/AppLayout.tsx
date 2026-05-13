@@ -5,6 +5,8 @@ import {
   CarOutlined,
   EnvironmentOutlined,
   ScheduleOutlined,
+  FlagOutlined,
+  AppstoreOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../stores/authStore';
@@ -14,6 +16,8 @@ const { Header, Sider, Content } = Layout;
 const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '调度看板' },
   { key: '/vehicles', icon: <CarOutlined />, label: '车辆管理' },
+  { key: '/vehicle-types', icon: <AppstoreOutlined />, label: '车辆类型' },
+  { key: '/loading-points', icon: <FlagOutlined />, label: '装载点管理' },
   { key: '/map', icon: <EnvironmentOutlined />, label: '实时地图' },
   { key: '/tasks', icon: <ScheduleOutlined />, label: '调度任务' },
 ];

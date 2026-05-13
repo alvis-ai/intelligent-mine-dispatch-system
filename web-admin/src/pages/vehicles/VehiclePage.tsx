@@ -15,12 +15,18 @@ interface VehicleRecord {
   fuelLevel: number;
 }
 
+interface TypeOption {
+  value: number;
+  label: string;
+}
+
 const TYPE_MAP: Record<number, string> = { 1: '矿用卡车', 2: '挖掘机', 3: '装载机' };
 const STATUS_MAP: Record<number, string> = { 1: '空闲', 2: '作业中', 3: '维修中', 4: '离线' };
 const STATUS_COLORS: Record<number, string> = { 1: 'green', 2: 'blue', 3: 'orange', 4: 'default' };
 
 export default function VehiclePage() {
   const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
+  const [typeOptions, setTypeOptions] = useState<TypeOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -30,11 +36,13 @@ export default function VehiclePage() {
     setLoading(true);
     try {
       const res = await apiClient.get('/api/v1/vehicles');
+      const types = typeOptions.length > 0 ? typeOptions : [];
+      const getTypeName = (t: number) => types.find((x) => x.value === t)?.label || TYPE_MAP[t] || '未知';
       const list: VehicleRecord[] = (res.data.data || []).map((v: any) => ({
         id: v.id,
         plate: v.plate,
         type: v.type,
-        typeName: TYPE_MAP[v.type] || '未知',
+        typeName: getTypeName(v.type),
         status: v.status,
         statusName: STATUS_MAP[v.status] || '未知',
         fuelLevel: v.fuel_level ?? 100,
@@ -47,7 +55,20 @@ export default function VehiclePage() {
     }
   };
 
-  useEffect(() => { fetchVehicles(); }, []);
+  const fetchVehicleTypes = async () => {
+    try {
+      const res = await apiClient.get('/api/v1/vehicle-types');
+      const list: TypeOption[] = (res.data.data || []).map((t: any) => ({
+        value: t.id,
+        label: t.name,
+      }));
+      setTypeOptions(list);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => { fetchVehicles(); fetchVehicleTypes(); }, []);
 
   const handleAdd = async () => {
     try {
@@ -128,14 +149,12 @@ export default function VehiclePage() {
             <Input placeholder="请输入车牌" />
           </Form.Item>
           <Form.Item label="车辆类型" name="type" rules={[{ required: true, message: '请选择车辆类型' }]}>
-            <Select
-              placeholder="请选择"
-              options={[
-                { value: 1, label: '矿用卡车' },
-                { value: 2, label: '挖掘机' },
-                { value: 3, label: '装载机' },
-              ]}
-            />
+            <Select placeholder="请选择" options={typeOptions.length > 0 ? typeOptions : [
+              { value: 1, label: '矿用卡车' },
+              { value: 2, label: '挖掘机' },
+              { value: 3, label: '装载机' },
+              { value: 4, label: '推土机' },
+            ]} />
           </Form.Item>
         </Form>
       </Modal>

@@ -1,0 +1,12 @@
+Name: auth-service
+Host: 0.0.0.0
+Port: 8082
+Mode: dev
+JwtSecret: mine-dispatch-secret-key
+JwtExpire: 86400
+UserRpc:
+  Endpoints:
+    - user-service:8081
+PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable
+RedisAddr: redis:6379
+RedisPass: ""

@@ -29,7 +29,11 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://${window.location.hostname}:8080/ws/location`);
+    const envWsUrl = import.meta.env.VITE_WS_URL;
+    const wsUrl = envWsUrl !== undefined
+      ? envWsUrl
+      : `ws://${window.location.hostname}:8080/ws/location`;
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => setWsConnected(true);
     ws.onclose = () => setWsConnected(false);
