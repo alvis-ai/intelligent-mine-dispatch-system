@@ -157,9 +157,51 @@ assert_json 0 "上报车辆位置" \
   -H "Content-Type: application/json" \
   -d "{\"location\":{\"vehicle_id\":$V_ID,\"latitude\":39.9042,\"longitude\":116.4074,\"speed\":35,\"heading\":180,\"altitude\":100}}"
 
+# ── 7. 告警服务 ──
+echo ""
+echo "── 7. 告警服务 ──"
+
+assert_json 0 "创建圆形电子围栏" \
+  -X POST "$GATEWAY/api/v1/geofences" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"测试围栏","shape":"circle","center_lat":39.9042,"center_lon":116.4074,"radius_m":500,"fence_type":"restricted","max_speed_kmh":40,"enabled":true}'
+
+FENCE_ID=$(python3 -c "import json; print(json.load(open('/tmp/api_resp.json')).get('data',{}).get('id',''))" 2>/dev/null)
+[ -n "$FENCE_ID" ] && ok "电子围栏 ID: $FENCE_ID" || fail "围栏 ID 为空"
+
+assert_json 0 "创建告警规则" \
+  -X POST "$GATEWAY/api/v1/alarm-rules" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"测试禁区规则\",\"rule_type\":\"geofence\",\"geofence_id\":$FENCE_ID,\"severity\":\"critical\",\"description\":\"测试\",\"enabled\":true}"
+
+RULE_ID=$(python3 -c "import json; print(json.load(open('/tmp/api_resp.json')).get('data',{}).get('id',''))" 2>/dev/null)
+[ -n "$RULE_ID" ] && ok "告警规则 ID: $RULE_ID" || fail "规则 ID 为空"
+
+assert_json 0 "获取围栏列表" \
+  -X GET "$GATEWAY/api/v1/geofences"
+
+assert_json 0 "获取告警规则列表" \
+  -X GET "$GATEWAY/api/v1/alarm-rules"
+
+assert_json 0 "获取告警事件列表" \
+  -X GET "$GATEWAY/api/v1/alarms"
+
+assert_json 0 "获取告警统计" \
+  -X GET "$GATEWAY/api/v1/alarms/stats"
+
+assert_json 0 "位置检查 (安全位置)" \
+  -X POST "$GATEWAY/api/v1/alarms/check-position" \
+  -H "Content-Type: application/json" \
+  -d "{\"latitude\":39.9000,\"longitude\":116.4200,\"speed\":10,\"vehicle_id\":1}"
+
+assert_json 0 "位置检查 (闯入禁区)" \
+  -X POST "$GATEWAY/api/v1/alarms/check-position" \
+  -H "Content-Type: application/json" \
+  -d "{\"latitude\":39.9042,\"longitude\":116.4074,\"speed\":50,\"vehicle_id\":1}"
+
 echo ""
 
-# ── 7. 结果 ──
+# ── 8. 结果 ──
 echo "============================================"
 echo -e "  通过: ${GREEN}$PASS${NC}  |  失败: ${RED}$FAIL${NC}  |  总计: $((PASS+FAIL))"
 echo "============================================"

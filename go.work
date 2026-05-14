@@ -4,6 +4,7 @@ use (
 	./gateway
 	./pkg
 	./proto
+	./services/alarm-service
 	./services/auth-service
 	./services/dispatch-service
 	./services/telemetry-service

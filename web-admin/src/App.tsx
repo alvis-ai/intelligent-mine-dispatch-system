@@ -9,6 +9,8 @@ import MapPage from './pages/map/MapPage';
 import TaskPage from './pages/tasks/TaskPage';
 import LoadingPointPage from './pages/loadingpoints/LoadingPointPage';
 import VehicleTypePage from './pages/vehicletypes/VehicleTypePage';
+import AlarmCenterPage from './pages/alarms/AlarmCenterPage';
+import GeofencePage from './pages/geofences/GeofencePage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token');
@@ -36,6 +38,8 @@ export default function App() {
             <Route path="tasks" element={<TaskPage />} />
             <Route path="loading-points" element={<LoadingPointPage />} />
             <Route path="vehicle-types" element={<VehicleTypePage />} />
+            <Route path="alarms" element={<AlarmCenterPage />} />
+            <Route path="geofences" element={<GeofencePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

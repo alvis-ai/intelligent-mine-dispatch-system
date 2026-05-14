@@ -7,6 +7,8 @@ import {
   ScheduleOutlined,
   FlagOutlined,
   AppstoreOutlined,
+  BellOutlined,
+  SecurityScanOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../stores/authStore';
@@ -20,6 +22,8 @@ const menuItems = [
   { key: '/loading-points', icon: <FlagOutlined />, label: '装载点管理' },
   { key: '/map', icon: <EnvironmentOutlined />, label: '实时地图' },
   { key: '/tasks', icon: <ScheduleOutlined />, label: '调度任务' },
+  { key: '/alarms', icon: <BellOutlined />, label: '告警中心' },
+  { key: '/geofences', icon: <SecurityScanOutlined />, label: '电子围栏' },
 ];
 
 export default function AppLayout() {

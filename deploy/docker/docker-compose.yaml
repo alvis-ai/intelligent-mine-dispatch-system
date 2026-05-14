@@ -95,6 +95,21 @@ services:
       redis:
         condition: service_healthy
 
+  alarm-service:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.service
+      args:
+        SERVICE: alarm-service
+    command: ["-f", "/app/etc/alarm-docker.yaml"]
+    ports:
+      - "8087:8087"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   gateway:
     build:
       context: ../../
@@ -109,6 +124,7 @@ services:
       - vehicle-service
       - telemetry-service
       - dispatch-service
+      - alarm-service
 
   web-admin:
     build:

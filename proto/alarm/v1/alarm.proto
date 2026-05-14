@@ -1,0 +1,222 @@
+syntax = "proto3";
+
+package alarm.v1;
+
+option go_package = "github.com/aicong/mine-dispatch/proto/alarm/v1;alarmv1";
+
+// ── Geofence ──
+message Geofence {
+  uint64 id = 1;
+  string name = 2;
+  string shape = 3;        // "circle" | "polygon"
+  double center_lat = 4;
+  double center_lon = 5;
+  double radius_m = 6;          // for circle
+  repeated Coord points = 7;    // for polygon
+  string fence_type = 8;        // "restricted" | "loading" | "dumping" | "parking"
+  int32 min_speed_kmh = 9;
+  int32 max_speed_kmh = 10;
+  string time_range = 11;       // "00:00-23:59"
+  bool enabled = 12;
+  uint64 mine_id = 13;
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message Coord {
+  double lat = 1;
+  double lon = 2;
+}
+
+// ── Alarm Rule ──
+message AlarmRule {
+  uint64 id = 1;
+  string name = 2;
+  string rule_type = 3;            // "geofence" | "speeding" | "offline" | "deviation"
+  uint64 geofence_id = 4;
+  string severity = 5;             // "info" | "warning" | "critical"
+  string description = 6;
+  bool enabled = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+// ── Alarm Event ──
+message AlarmEvent {
+  uint64 id = 1;
+  uint64 rule_id = 2;
+  uint64 vehicle_id = 3;
+  string vehicle_plate = 4;
+  string alarm_type = 5;
+  string severity = 6;
+  string message = 7;
+  double latitude = 8;
+  double longitude = 9;
+  double speed = 10;
+  bool acknowledged = 11;
+  string acknowledged_by = 12;
+  string acknowledged_at = 13;
+  string created_at = 14;
+  uint64 mine_id = 15;
+}
+
+// ── Requests / Responses ──
+
+message CreateGeofenceRequest {
+  string name = 1;
+  string shape = 2;
+  double center_lat = 3;
+  double center_lon = 4;
+  double radius_m = 5;
+  repeated Coord points = 6;
+  string fence_type = 7;
+  int32 min_speed_kmh = 8;
+  int32 max_speed_kmh = 9;
+  string time_range = 10;
+  bool enabled = 11;
+  uint64 mine_id = 12;
+}
+
+message UpdateGeofenceRequest {
+  uint64 id = 1;
+  string name = 2;
+  string shape = 3;
+  double center_lat = 4;
+  double center_lon = 5;
+  double radius_m = 6;
+  repeated Coord points = 7;
+  string fence_type = 8;
+  int32 min_speed_kmh = 9;
+  int32 max_speed_kmh = 10;
+  string time_range = 11;
+  bool enabled = 12;
+  uint64 mine_id = 13;
+}
+
+message GetGeofenceRequest { uint64 id = 1; }
+
+message DeleteGeofenceRequest { uint64 id = 1; }
+
+message ListGeofencesRequest {
+  uint64 mine_id = 1;
+  string fence_type = 2;
+  bool enabled_only = 3;
+}
+
+message GeofenceResponse {
+  int32 code = 1;
+  string message = 2;
+  Geofence data = 3;
+}
+
+message GeofenceListResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated Geofence data = 3;
+  int64 total = 4;
+}
+
+message CreateAlarmRuleRequest {
+  string name = 1;
+  string rule_type = 2;
+  uint64 geofence_id = 3;
+  string severity = 4;
+  string description = 5;
+  bool enabled = 6;
+}
+
+message UpdateAlarmRuleRequest {
+  uint64 id = 1;
+  string name = 2;
+  string rule_type = 3;
+  uint64 geofence_id = 4;
+  string severity = 5;
+  string description = 6;
+  bool enabled = 7;
+}
+
+message GetAlarmRuleRequest { uint64 id = 1; }
+
+message DeleteAlarmRuleRequest { uint64 id = 1; }
+
+message ListAlarmRulesRequest {
+  string rule_type = 1;
+  bool enabled_only = 2;
+}
+
+message AlarmRuleResponse {
+  int32 code = 1;
+  string message = 2;
+  AlarmRule data = 3;
+}
+
+message AlarmRuleListResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated AlarmRule data = 3;
+  int64 total = 4;
+}
+
+message ListAlarmEventsRequest {
+  uint64 vehicle_id = 1;
+  string severity = 2;
+  string alarm_type = 3;
+  bool unacknowledged_only = 4;
+  uint64 mine_id = 5;
+  int32 page = 6;
+  int32 page_size = 7;
+}
+
+message AcknowledgeAlarmRequest {
+  uint64 id = 1;
+  string acknowledged_by = 2;
+}
+
+message AlarmEventListResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated AlarmEvent data = 3;
+  int64 total = 4;
+}
+
+message AlarmEventResponse {
+  int32 code = 1;
+  string message = 2;
+  AlarmEvent data = 3;
+}
+
+message CheckPositionRequest {
+  double latitude = 1;
+  double longitude = 2;
+  double speed = 3;
+  uint64 vehicle_id = 4;
+}
+
+message CheckPositionResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated AlarmEvent alarms = 3;
+}
+
+service AlarmService {
+  // Geofence
+  rpc CreateGeofence(CreateGeofenceRequest) returns (GeofenceResponse);
+  rpc UpdateGeofence(UpdateGeofenceRequest) returns (GeofenceResponse);
+  rpc GetGeofence(GetGeofenceRequest) returns (GeofenceResponse);
+  rpc DeleteGeofence(DeleteGeofenceRequest) returns (GeofenceResponse);
+  rpc ListGeofences(ListGeofencesRequest) returns (GeofenceListResponse);
+
+  // Alarm Rules
+  rpc CreateAlarmRule(CreateAlarmRuleRequest) returns (AlarmRuleResponse);
+  rpc UpdateAlarmRule(UpdateAlarmRuleRequest) returns (AlarmRuleResponse);
+  rpc GetAlarmRule(GetAlarmRuleRequest) returns (AlarmRuleResponse);
+  rpc DeleteAlarmRule(DeleteAlarmRuleRequest) returns (AlarmRuleResponse);
+  rpc ListAlarmRules(ListAlarmRulesRequest) returns (AlarmRuleListResponse);
+
+  // Alarm Events
+  rpc ListAlarmEvents(ListAlarmEventsRequest) returns (AlarmEventListResponse);
+  rpc AcknowledgeAlarm(AcknowledgeAlarmRequest) returns (AlarmEventResponse);
+
+  // Position check (called by telemetry service)
+  rpc CheckPosition(CheckPositionRequest) returns (CheckPositionResponse);
+}

@@ -92,3 +92,79 @@ INSERT INTO loading_points (id, name, type, material) VALUES
     (4, '卸载点D', 'dumping', '矿石'),
     (5, '卸载点E', 'dumping', '岩石')
 ON CONFLICT (id) DO NOTHING;
+
+-- ── Alarm & Geofence ──
+
+CREATE TABLE IF NOT EXISTS geofences (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    shape VARCHAR(16) DEFAULT 'circle',
+    center_lat DOUBLE PRECISION DEFAULT 0,
+    center_lon DOUBLE PRECISION DEFAULT 0,
+    radius_m DOUBLE PRECISION DEFAULT 0,
+    points_json TEXT DEFAULT '',
+    fence_type VARCHAR(32) DEFAULT 'restricted',
+    min_speed_kmh INT DEFAULT 0,
+    max_speed_kmh INT DEFAULT 0,
+    time_range VARCHAR(32) DEFAULT '',
+    enabled BOOLEAN DEFAULT TRUE,
+    mine_id BIGINT DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS alarm_rules (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    rule_type VARCHAR(32) NOT NULL,
+    geofence_id BIGINT DEFAULT 0,
+    severity VARCHAR(16) DEFAULT 'warning',
+    description VARCHAR(256) DEFAULT '',
+    enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS alarm_events (
+    id BIGINT PRIMARY KEY,
+    rule_id BIGINT DEFAULT 0,
+    vehicle_id BIGINT DEFAULT 0,
+    vehicle_plate VARCHAR(64) DEFAULT '',
+    alarm_type VARCHAR(32) NOT NULL,
+    severity VARCHAR(16) DEFAULT 'warning',
+    message VARCHAR(512) DEFAULT '',
+    latitude DOUBLE PRECISION DEFAULT 0,
+    longitude DOUBLE PRECISION DEFAULT 0,
+    speed DOUBLE PRECISION DEFAULT 0,
+    acknowledged BOOLEAN DEFAULT FALSE,
+    acknowledged_by VARCHAR(64) DEFAULT '',
+    acknowledged_at TIMESTAMP WITH TIME ZONE,
+    mine_id BIGINT DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_geofences_mine_id ON geofences(mine_id);
+CREATE INDEX idx_geofences_fence_type ON geofences(fence_type);
+CREATE INDEX idx_alarm_rules_rule_type ON alarm_rules(rule_type);
+CREATE INDEX idx_alarm_events_vehicle_id ON alarm_events(vehicle_id);
+CREATE INDEX idx_alarm_events_severity ON alarm_events(severity);
+CREATE INDEX idx_alarm_events_acknowledged ON alarm_events(acknowledged);
+CREATE INDEX idx_alarm_events_created_at ON alarm_events(created_at);
+
+-- Seed: geofences (电子围栏)
+INSERT INTO geofences (id, name, shape, center_lat, center_lon, radius_m, fence_type, max_speed_kmh, enabled) VALUES
+    (1, '矿区-东区', 'circle', 39.9042, 116.4074, 500, 'restricted', 40, TRUE),
+    (2, '矿区-西区', 'circle', 39.9142, 116.3974, 400, 'restricted', 30, TRUE),
+    (3, '装载区安全围栏', 'circle', 39.9080, 116.4020, 200, 'loading', 20, TRUE),
+    (4, '卸载区安全围栏', 'circle', 39.9000, 116.4120, 200, 'dumping', 15, TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+-- Seed: alarm rules
+INSERT INTO alarm_rules (id, name, rule_type, geofence_id, severity, description, enabled) VALUES
+    (1, '东区禁区闯入', 'geofence', 1, 'critical', '车辆进入东区禁区触发告警', TRUE),
+    (2, '西区禁区闯入', 'geofence', 2, 'critical', '车辆进入西区禁区触发告警', TRUE),
+    (3, '装载区超速告警', 'geofence', 3, 'warning', '装载区内车速超过 20 km/h', TRUE),
+    (4, '卸载区超速告警', 'geofence', 4, 'warning', '卸载区内车速超过 15 km/h', TRUE),
+    (5, '严重超速告警', 'speeding', 0, 'critical', '车速超过 80 km/h', TRUE),
+    (6, '超速警告', 'speeding', 0, 'warning', '车速超过 60 km/h', TRUE)
+ON CONFLICT (id) DO NOTHING;

@@ -30,7 +30,8 @@ type GatewayConfig struct {
 	VehicleSvcAddr   string
 	TelemetrySvcAddr string
 	DispatchSvcAddr  string
-	PostgresDSN  string
+	AlarmSvcAddr     string
+	PostgresDSN      string
 }
 
 func proxyHandler(targetURL string) http.HandlerFunc {
@@ -81,6 +82,7 @@ func main() {
 	vehicleConn, _ := grpc.Dial(c.VehicleSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	telemetryConn, _ := grpc.Dial(c.TelemetrySvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	dispatchConn, _ := grpc.Dial(c.DispatchSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	alarmConn, _ := grpc.Dial(c.AlarmSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	userClient := userv1.NewUserServiceClient(userConn)
 
@@ -106,6 +108,7 @@ func main() {
 			fmt.Printf("Warning: failed to connect management DB: %v\n", err)
 		}
 	}
+	handler.RegisterAlarmRoutes(server, alarmConn)
 	handler.RegisterManagementRoutes(server, mgmtDB)
 
 	fmt.Printf("Starting gateway on %s:%d\n", c.Host, c.Port)
