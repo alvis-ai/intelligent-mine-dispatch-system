@@ -168,3 +168,67 @@ INSERT INTO alarm_rules (id, name, rule_type, geofence_id, severity, description
     (5, '严重超速告警', 'speeding', 0, 'critical', '车速超过 80 km/h', TRUE),
     (6, '超速警告', 'speeding', 0, 'warning', '车速超过 60 km/h', TRUE)
 ON CONFLICT (id) DO NOTHING;
+
+-- ── Road Network ──
+
+CREATE TABLE IF NOT EXISTS road_nodes (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
+    mine_id BIGINT DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS road_edges (
+    id BIGINT PRIMARY KEY,
+    from_node_id BIGINT NOT NULL,
+    to_node_id BIGINT NOT NULL,
+    distance_m DOUBLE PRECISION NOT NULL,
+    max_speed_kmh INT DEFAULT 30,
+    is_oneway BOOLEAN DEFAULT FALSE,
+    mine_id BIGINT DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_road_nodes_mine_id ON road_nodes(mine_id);
+CREATE INDEX idx_road_edges_from_node ON road_edges(from_node_id);
+CREATE INDEX idx_road_edges_to_node ON road_edges(to_node_id);
+CREATE INDEX idx_road_edges_mine_id ON road_edges(mine_id);
+
+-- Seed: road network connecting loading/dumping points
+INSERT INTO road_nodes (id, name, latitude, longitude) VALUES
+    (100, '矿区入口', 39.8950, 116.4050),
+    (101, '装载点A路口', 39.9080, 116.4020),
+    (102, '装载点B路口', 39.9120, 116.3980),
+    (103, '卸载点C路口', 39.9000, 116.4120),
+    (104, '卸载点D路口', 39.8960, 116.4150),
+    (105, '卸载点E路口', 39.9020, 116.4100),
+    (106, '东区主干道-南', 39.9020, 116.4070),
+    (107, '东区主干道-北', 39.9100, 116.4070),
+    (108, '西区分岔口', 39.9080, 116.3950),
+    (109, '停车场入口', 39.8980, 116.4000)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO road_edges (id, from_node_id, to_node_id, distance_m, max_speed_kmh, is_oneway) VALUES
+    -- Main road south-north
+    (1001, 100, 106, 600, 40, false),
+    (1002, 106, 107, 950, 40, false),
+    (1003, 106, 103, 500, 30, false),
+    (1004, 106, 105, 350, 30, false),
+    (1005, 107, 101, 450, 25, false),
+    (1006, 107, 102, 700, 25, false),
+    -- West branch
+    (1007, 106, 108, 1100, 35, false),
+    (1008, 108, 101, 700, 25, false),
+    (1009, 108, 102, 550, 25, false),
+    -- To dumping points
+    (1010, 103, 104, 500, 30, false),
+    (1011, 105, 104, 700, 30, false),
+    (1012, 105, 103, 300, 20, false),
+    -- Parking
+    (1013, 100, 109, 400, 20, false),
+    (1014, 106, 109, 500, 20, false)
+ON CONFLICT (id) DO NOTHING;

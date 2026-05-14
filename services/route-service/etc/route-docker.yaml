@@ -1,0 +1,4 @@
+Name: route-service
+ListenOn: 0.0.0.0:8088
+
+PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable

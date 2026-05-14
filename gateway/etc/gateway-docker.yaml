@@ -10,4 +10,5 @@ VehicleSvcAddr: vehicle-service:8083
 TelemetrySvcAddr: telemetry-service:8084
 DispatchSvcAddr: dispatch-service:8085
 AlarmSvcAddr: alarm-service:8087
+RouteSvcAddr: route-service:8088
 PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable

@@ -110,6 +110,19 @@ services:
       redis:
         condition: service_healthy
 
+  route-service:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.service
+      args:
+        SERVICE: route-service
+    command: ["-f", "/app/etc/route-docker.yaml"]
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   gateway:
     build:
       context: ../../
@@ -125,6 +138,7 @@ services:
       - telemetry-service
       - dispatch-service
       - alarm-service
+      - route-service
 
   web-admin:
     build:

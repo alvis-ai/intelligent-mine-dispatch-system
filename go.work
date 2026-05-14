@@ -6,6 +6,7 @@ use (
 	./proto
 	./services/alarm-service
 	./services/auth-service
+	./services/route-service
 	./services/dispatch-service
 	./services/telemetry-service
 	./services/user-service
