@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  Table, Button, Card, Tag, Space, Typography, Modal, Form, Input, Select, message,
+  Table, Button, Card, Tag, Space, Typography, Modal, Form, Input, Select, message, Popconfirm,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import apiClient from '../../api/client';
 
 interface VehicleRecord {
@@ -20,24 +20,24 @@ interface TypeOption {
   label: string;
 }
 
-const TYPE_MAP: Record<number, string> = { 1: '矿用卡车', 2: '挖掘机', 3: '装载机' };
-const STATUS_MAP: Record<number, string> = { 1: '空闲', 2: '作业中', 3: '维修中', 4: '离线' };
-const STATUS_COLORS: Record<number, string> = { 1: 'green', 2: 'blue', 3: 'orange', 4: 'default' };
+const STATUS_MAP: Record<number, string> = { 1: '空闲', 2: '装载中', 3: '运输中', 4: '卸载中', 5: '维修中', 6: '离线' };
+const STATUS_COLORS: Record<number, string> = { 1: 'green', 2: 'blue', 3: 'processing', 4: 'orange', 5: 'warning', 6: 'default' };
 
 export default function VehiclePage() {
   const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
   const [typeOptions, setTypeOptions] = useState<TypeOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<VehicleRecord | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
 
-  const fetchVehicles = async () => {
+  const fetchVehicles = useCallback(async () => {
     setLoading(true);
     try {
       const res = await apiClient.get('/api/v1/vehicles');
       const types = typeOptions.length > 0 ? typeOptions : [];
-      const getTypeName = (t: number) => types.find((x) => x.value === t)?.label || TYPE_MAP[t] || '未知';
+      const getTypeName = (t: number) => types.find((x) => x.value === t)?.label || '未知';
       const list: VehicleRecord[] = (res.data.data || []).map((v: any) => ({
         id: v.id,
         plate: v.plate,
@@ -53,7 +53,7 @@ export default function VehiclePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [typeOptions]);
 
   const fetchVehicleTypes = async () => {
     try {
@@ -70,22 +70,45 @@ export default function VehiclePage() {
 
   useEffect(() => { fetchVehicles(); fetchVehicleTypes(); }, []);
 
-  const handleAdd = async () => {
+  const openEdit = (v: VehicleRecord) => {
+    setEditing(v);
+    form.setFieldsValue({ plate: v.plate, type: v.type, status: v.status });
+    setModalOpen(true);
+  };
+
+  const openAdd = () => {
+    setEditing(null);
+    form.resetFields();
+    setModalOpen(true);
+  };
+
+  const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setSubmitting(true);
-      const res = await apiClient.post('/api/v1/vehicles', {
-        plate: values.plate,
-        type: values.type,
-        mineId: 1,
-      });
+      let res: any;
+      if (editing) {
+        res = await apiClient.put(`/api/v1/vehicles/${editing.id}`, {
+          plate: values.plate,
+          type: values.type,
+          status: values.status,
+          mineId: 1,
+        });
+      } else {
+        res = await apiClient.post('/api/v1/vehicles', {
+          plate: values.plate,
+          type: values.type,
+          mineId: 1,
+        });
+      }
       if (res.data.code === 0 || res.data.message === 'success') {
-        message.success('添加成功');
+        message.success(editing ? '更新成功' : '添加成功');
         setModalOpen(false);
         form.resetFields();
+        setEditing(null);
         fetchVehicles();
       } else {
-        message.error(res.data.message || '添加失败');
+        message.error(res.data.message || '操作失败');
       }
     } catch (err: any) {
       if (err?.response?.data?.message) {
@@ -93,10 +116,22 @@ export default function VehiclePage() {
       } else if (err?.errorFields) {
         // form validation error, antd shows inline
       } else {
-        message.error('添加失败');
+        message.error('操作失败');
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await apiClient.delete(`/api/v1/vehicles/${id}`);
+      if (res.data.code === 0 || res.data.message === 'success') {
+        message.success('删除成功');
+        fetchVehicles();
+      }
+    } catch {
+      message.error('删除失败');
     }
   };
 
@@ -116,10 +151,12 @@ export default function VehiclePage() {
     },
     {
       title: '操作', key: 'action',
-      render: () => (
+      render: (_: any, record: VehicleRecord) => (
         <Space>
-          <a>编辑</a>
-          <a>调度</a>
+          <a onClick={() => openEdit(record)}><EditOutlined /> 编辑</a>
+          <Popconfirm title="确认删除该车辆？" onConfirm={() => handleDelete(record.id)}>
+            <a style={{ color: 'red' }}>删除</a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -130,7 +167,7 @@ export default function VehiclePage() {
       <Typography.Title level={4}>车辆管理</Typography.Title>
       <Card>
         <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openAdd}>
             添加车辆
           </Button>
         </div>
@@ -138,10 +175,10 @@ export default function VehiclePage() {
       </Card>
 
       <Modal
-        title="添加车辆"
+        title={editing ? '编辑车辆' : '添加车辆'}
         open={modalOpen}
-        onCancel={() => { setModalOpen(false); form.resetFields(); }}
-        onOk={handleAdd}
+        onCancel={() => { setModalOpen(false); setEditing(null); }}
+        onOk={handleSubmit}
         confirmLoading={submitting}
       >
         <Form form={form} layout="vertical">
@@ -156,6 +193,18 @@ export default function VehiclePage() {
               { value: 4, label: '推土机' },
             ]} />
           </Form.Item>
+          {editing && (
+            <Form.Item label="状态" name="status">
+              <Select options={[
+                { value: 1, label: '空闲' },
+                { value: 2, label: '装载中' },
+                { value: 3, label: '运输中' },
+                { value: 4, label: '卸载中' },
+                { value: 5, label: '维修中' },
+                { value: 6, label: '离线' },
+              ]} />
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </div>

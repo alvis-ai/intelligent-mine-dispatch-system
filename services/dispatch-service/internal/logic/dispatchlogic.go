@@ -72,6 +72,11 @@ func (l *DispatchLogic) CompleteTask(in *dispatchv1.CompleteTaskRequest) (*dispa
 	return l.GetTask(&dispatchv1.GetTaskRequest{Id: in.Id})
 }
 
+func (l *DispatchLogic) CancelTask(in *dispatchv1.CancelTaskRequest) (*dispatchv1.TaskResponse, error) {
+	l.svc.DB.Model(&model.DispatchTask{}).Where("id = ?", in.Id).Update("status", model.StatusCancelled)
+	return l.GetTask(&dispatchv1.GetTaskRequest{Id: in.Id})
+}
+
 func (l *DispatchLogic) ListTask(in *dispatchv1.ListTaskRequest) (*dispatchv1.TaskListResponse, error) {
 	var tasks []model.DispatchTask
 	var total int64

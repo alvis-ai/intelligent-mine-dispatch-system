@@ -31,6 +31,8 @@ message GetTaskRequest { uint64 id = 1; }
 
 message CompleteTaskRequest { uint64 id = 1; }
 
+message CancelTaskRequest { uint64 id = 1; }
+
 message ListTaskRequest {
   int32 page = 1;
   int32 page_size = 2;
@@ -55,5 +57,6 @@ service DispatchService {
   rpc AssignTask(AssignTaskRequest) returns (TaskResponse);
   rpc GetTask(GetTaskRequest) returns (TaskResponse);
   rpc CompleteTask(CompleteTaskRequest) returns (TaskResponse);
+  rpc CancelTask(CancelTaskRequest) returns (TaskResponse);
   rpc ListTask(ListTaskRequest) returns (TaskListResponse);
 }

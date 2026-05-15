@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  Table, Card, Tag, Button, Typography, Modal, Select, Form, message,
+  Table, Card, Tag, Button, Typography, Modal, Select, Form, message, Space, Popconfirm,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import apiClient from '../../api/client';
 
 interface TaskRecord {
@@ -39,7 +39,7 @@ export default function TaskPage() {
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
       const res = await apiClient.get('/api/v1/dispatch/tasks');
@@ -49,7 +49,7 @@ export default function TaskPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const fetchVehicles = async () => {
     try {
@@ -83,7 +83,7 @@ export default function TaskPage() {
     fetchTasks();
     fetchVehicles();
     fetchPoints();
-  }, []);
+  }, [fetchTasks]);
 
   const handleCreate = async () => {
     try {
@@ -114,6 +114,23 @@ export default function TaskPage() {
     }
   };
 
+  const handleUpdateStatus = async (id: number, status: string) => {
+    try {
+      const endpoint = status === 'completed'
+        ? `/api/v1/dispatch/tasks/${id}/complete`
+        : `/api/v1/dispatch/tasks/${id}/cancel`;
+      const res = await apiClient.post(endpoint);
+      if (res.data.code === 0 || res.data.message === 'success') {
+        message.success(status === 'completed' ? '任务已完成' : '任务已取消');
+        fetchTasks();
+      } else {
+        message.error(res.data.message || '操作失败');
+      }
+    } catch {
+      message.error('操作失败');
+    }
+  };
+
   const pointLabel = (id: number) =>
     [...loadPoints, ...dumpPoints].find((p) => p.value === id)?.label || `点${id}`;
 
@@ -140,16 +157,50 @@ export default function TaskPage() {
       },
     },
     { title: '算法', dataIndex: 'algorithm', key: 'algorithm' },
+    {
+      title: '操作', key: 'action', width: 160,
+      render: (_: any, record: TaskRecord) => (
+        <Space>
+          {record.status === 'active' && (
+            <Popconfirm title="确认完成任务？" onConfirm={() => handleUpdateStatus(record.id, 'completed')}>
+              <a style={{ color: 'green' }}><CheckCircleOutlined /> 完成</a>
+            </Popconfirm>
+          )}
+          {(record.status === 'pending' || record.status === 'active') && (
+            <Popconfirm title="确认取消任务？" onConfirm={() => handleUpdateStatus(record.id, 'cancelled')}>
+              <a style={{ color: 'red' }}><CloseCircleOutlined /> 取消</a>
+            </Popconfirm>
+          )}
+          {record.status === 'completed' && (
+            <Tag color="success" style={{ margin: 0 }}>已完成</Tag>
+          )}
+          {record.status === 'cancelled' && (
+            <Tag color="error" style={{ margin: 0 }}>已取消</Tag>
+          )}
+        </Space>
+      ),
+    },
   ];
+
+  const activeTasks = tasks.filter((t) => t.status === 'active').length;
+  const pendingTasks = tasks.filter((t) => t.status === 'pending').length;
 
   return (
     <div>
       <Typography.Title level={4}>调度任务</Typography.Title>
       <Card>
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
-            创建调度任务
-          </Button>
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Space>
+            <Tag color="processing">进行中 {activeTasks}</Tag>
+            <Tag color="default">待分配 {pendingTasks}</Tag>
+            <Tag color="success">已完成 {tasks.filter((t) => t.status === 'completed').length}</Tag>
+          </Space>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={fetchTasks}>刷新</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+              创建调度任务
+            </Button>
+          </Space>
         </div>
         <Table columns={columns} dataSource={tasks} rowKey="id" loading={loading} />
       </Card>

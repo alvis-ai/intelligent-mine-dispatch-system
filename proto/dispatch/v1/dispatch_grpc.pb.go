@@ -22,6 +22,7 @@ const (
 	DispatchService_AssignTask_FullMethodName   = "/dispatch.v1.DispatchService/AssignTask"
 	DispatchService_GetTask_FullMethodName      = "/dispatch.v1.DispatchService/GetTask"
 	DispatchService_CompleteTask_FullMethodName = "/dispatch.v1.DispatchService/CompleteTask"
+	DispatchService_CancelTask_FullMethodName   = "/dispatch.v1.DispatchService/CancelTask"
 	DispatchService_ListTask_FullMethodName     = "/dispatch.v1.DispatchService/ListTask"
 )
 
@@ -32,6 +33,7 @@ type DispatchServiceClient interface {
 	AssignTask(ctx context.Context, in *AssignTaskRequest, opts ...grpc.CallOption) (*TaskResponse, error)
 	GetTask(ctx context.Context, in *GetTaskRequest, opts ...grpc.CallOption) (*TaskResponse, error)
 	CompleteTask(ctx context.Context, in *CompleteTaskRequest, opts ...grpc.CallOption) (*TaskResponse, error)
+	CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*TaskResponse, error)
 	ListTask(ctx context.Context, in *ListTaskRequest, opts ...grpc.CallOption) (*TaskListResponse, error)
 }
 
@@ -73,6 +75,16 @@ func (c *dispatchServiceClient) CompleteTask(ctx context.Context, in *CompleteTa
 	return out, nil
 }
 
+func (c *dispatchServiceClient) CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*TaskResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TaskResponse)
+	err := c.cc.Invoke(ctx, DispatchService_CancelTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *dispatchServiceClient) ListTask(ctx context.Context, in *ListTaskRequest, opts ...grpc.CallOption) (*TaskListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TaskListResponse)
@@ -90,6 +102,7 @@ type DispatchServiceServer interface {
 	AssignTask(context.Context, *AssignTaskRequest) (*TaskResponse, error)
 	GetTask(context.Context, *GetTaskRequest) (*TaskResponse, error)
 	CompleteTask(context.Context, *CompleteTaskRequest) (*TaskResponse, error)
+	CancelTask(context.Context, *CancelTaskRequest) (*TaskResponse, error)
 	ListTask(context.Context, *ListTaskRequest) (*TaskListResponse, error)
 	mustEmbedUnimplementedDispatchServiceServer()
 }
@@ -109,6 +122,9 @@ func (UnimplementedDispatchServiceServer) GetTask(context.Context, *GetTaskReque
 }
 func (UnimplementedDispatchServiceServer) CompleteTask(context.Context, *CompleteTaskRequest) (*TaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompleteTask not implemented")
+}
+func (UnimplementedDispatchServiceServer) CancelTask(context.Context, *CancelTaskRequest) (*TaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelTask not implemented")
 }
 func (UnimplementedDispatchServiceServer) ListTask(context.Context, *ListTaskRequest) (*TaskListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTask not implemented")
@@ -188,6 +204,24 @@ func _DispatchService_CompleteTask_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DispatchService_CancelTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatchServiceServer).CancelTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatchService_CancelTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatchServiceServer).CancelTask(ctx, req.(*CancelTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DispatchService_ListTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListTaskRequest)
 	if err := dec(in); err != nil {
@@ -224,6 +258,10 @@ var DispatchService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CompleteTask",
 			Handler:    _DispatchService_CompleteTask_Handler,
+		},
+		{
+			MethodName: "CancelTask",
+			Handler:    _DispatchService_CancelTask_Handler,
 		},
 		{
 			MethodName: "ListTask",

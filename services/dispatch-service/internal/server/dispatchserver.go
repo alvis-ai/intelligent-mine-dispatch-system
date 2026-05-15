@@ -29,6 +29,10 @@ func (s *DispatchServer) CompleteTask(ctx context.Context, in *dispatchv1.Comple
 	return logic.NewDispatchLogic(ctx, s.svc).CompleteTask(in)
 }
 
+func (s *DispatchServer) CancelTask(ctx context.Context, in *dispatchv1.CancelTaskRequest) (*dispatchv1.TaskResponse, error) {
+	return logic.NewDispatchLogic(ctx, s.svc).CancelTask(in)
+}
+
 func (s *DispatchServer) ListTask(ctx context.Context, in *dispatchv1.ListTaskRequest) (*dispatchv1.TaskListResponse, error) {
 	return logic.NewDispatchLogic(ctx, s.svc).ListTask(in)
 }
