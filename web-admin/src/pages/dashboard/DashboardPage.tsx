@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Row, Col, Card, Statistic, Table, Typography, Tag } from 'antd';
 import {
   CarOutlined, CheckCircleOutlined, ClockCircleOutlined, WarningOutlined,
-  FireOutlined, DashOutlined,
+  FireOutlined,
 } from '@ant-design/icons';
 import apiClient from '../../api/client';
 

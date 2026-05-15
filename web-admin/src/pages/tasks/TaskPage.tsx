@@ -26,6 +26,7 @@ const ALGORITHMS = [
   { value: 'fifo', label: 'FIFO (先进先出)' },
   { value: 'nearest_first', label: '最近优先' },
   { value: 'weighted_round_robin', label: '加权轮询' },
+  { value: 'genetic_algorithm', label: '遗传算法优化' },
 ];
 
 export default function TaskPage() {

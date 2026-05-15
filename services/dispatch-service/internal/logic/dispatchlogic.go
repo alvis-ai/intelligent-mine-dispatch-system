@@ -29,6 +29,8 @@ func (l *DispatchLogic) getAssigner(algo string) TaskAssigner {
 		return &WeightedRoundRobinAssigner{svc: l.svc}
 	case "nearest_first":
 		return &NearestFirstAssigner{svc: l.svc, ctx: l.ctx}
+	case "genetic_algorithm":
+		return NewGeneticAlgorithmAssigner(l.ctx, l.svc)
 	default:
 		return &FIFOAssigner{svc: l.svc}
 	}

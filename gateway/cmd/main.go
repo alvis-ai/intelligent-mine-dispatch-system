@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 
+	"context"
+
 	"github.com/aicong/mine-dispatch/gateway/internal/handler"
 	userv1 "github.com/aicong/mine-dispatch/proto/user/v1"
 	"github.com/redis/go-redis/v9"
@@ -100,6 +102,7 @@ func main() {
 	handler.RegisterDispatchRoutes(server, dispatchConn)
 	wsHub := handler.NewWSHub(rdb)
 	handler.RegisterWSRoute(server, wsHub)
+		go wsHub.StartRedisListener(context.Background())
 
 	// Init GORM for management APIs
 	var mgmtDB *gorm.DB

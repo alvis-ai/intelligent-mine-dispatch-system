@@ -5,3 +5,4 @@ Mode: dev
 PostgresDSN: postgres://postgres:postgres@localhost:5432/mine_dispatch?sslmode=disable
 RedisAddr: localhost:6379
 RedisPass: ""
+RouteSvcAddr: localhost:8088

@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"context"
 	"testing"
 )
 
@@ -42,4 +43,14 @@ func TestGetAssigner_Empty(t *testing.T) {
 	if _, ok := a.(*FIFOAssigner); !ok {
 		t.Errorf("getAssigner('') = %T, want *FIFOAssigner (default)", a)
 	}
+}
+
+func TestGetAssigner_GeneticAlgorithm(t *testing.T) {
+	l := &DispatchLogic{ctx: context.Background()}
+	a := l.getAssigner("genetic_algorithm")
+	ga, ok := a.(*GeneticAlgorithmAssigner)
+	if !ok {
+		t.Errorf("getAssigner('genetic_algorithm') = %T, want *GeneticAlgorithmAssigner", a)
+	}
+	_ = ga
 }
