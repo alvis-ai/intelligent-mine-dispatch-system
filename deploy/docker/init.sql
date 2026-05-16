@@ -85,12 +85,12 @@ INSERT INTO vehicle_types (id, name, description, capacity, weight) VALUES
     (4, '推土机', '矿山推土设备', 0, 25)
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO loading_points (id, name, type, material) VALUES
-    (1, '装载点A', 'loading', '矿石'),
-    (2, '装载点B', 'loading', '岩石'),
-    (3, '卸载点C', 'dumping', '废石'),
-    (4, '卸载点D', 'dumping', '矿石'),
-    (5, '卸载点E', 'dumping', '岩石')
+INSERT INTO loading_points (id, name, type, latitude, longitude, material) VALUES
+    (1, '装载点A', 'loading', 39.9080, 116.4020, '矿石'),
+    (2, '装载点B', 'loading', 39.9120, 116.3980, '岩石'),
+    (3, '卸载点C', 'dumping', 39.9000, 116.4120, '废石'),
+    (4, '卸载点D', 'dumping', 39.8960, 116.4150, '矿石'),
+    (5, '卸载点E', 'dumping', 39.9020, 116.4100, '岩石')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Alarm & Geofence ──

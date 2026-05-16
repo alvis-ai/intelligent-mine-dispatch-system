@@ -29,7 +29,7 @@ services:
   user-service:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: user-service
     command: ["-f", "/app/etc/user-docker.yaml"]
@@ -44,7 +44,7 @@ services:
   auth-service:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: auth-service
     command: ["-f", "/app/etc/auth-docker.yaml"]
@@ -57,7 +57,7 @@ services:
   vehicle-service:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: vehicle-service
     command: ["-f", "/app/etc/vehicle-docker.yaml"]
@@ -70,7 +70,7 @@ services:
   telemetry-service:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: telemetry-service
     command: ["-f", "/app/etc/telemetry-docker.yaml"]
@@ -83,7 +83,7 @@ services:
   dispatch-service:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: dispatch-service
     command: ["-f", "/app/etc/dispatch-docker.yaml"]
@@ -98,7 +98,7 @@ services:
   alarm-service:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: alarm-service
     command: ["-f", "/app/etc/alarm-docker.yaml"]
@@ -113,7 +113,7 @@ services:
   route-service:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: route-service
     command: ["-f", "/app/etc/route-docker.yaml"]
@@ -126,7 +126,7 @@ services:
   gateway:
     build:
       context: ../../
-      dockerfile: deploy/docker/Dockerfile.service
+      dockerfile: deploy/docker/Dockerfile.service.local
       args:
         SERVICE: gateway
     command: ["-f", "/app/etc/gateway-docker.yaml"]

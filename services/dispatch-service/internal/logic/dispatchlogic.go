@@ -3,8 +3,11 @@ package logic
 import (
 	"context"
 	"fmt"
+	"math"
+	"time"
 
-	"github.com/aicong/mine-dispatch/proto/dispatch/v1"
+	dispatchv1 "github.com/aicong/mine-dispatch/proto/dispatch/v1"
+	routev1 "github.com/aicong/mine-dispatch/proto/route/v1"
 	"github.com/aicong/mine-dispatch/pkg/utils"
 	"github.com/aicong/mine-dispatch/services/dispatch-service/internal/model"
 	"github.com/aicong/mine-dispatch/services/dispatch-service/internal/svc"
@@ -148,19 +151,84 @@ type NearestFirstAssigner struct {
 }
 
 func (a *NearestFirstAssigner) Assign(vehicleID, loadPointID, dumpPointID uint64) (uint64, error) {
+	// Query vehicle position
+	var vhc struct {
+		Latitude  float64
+		Longitude float64
+	}
+	a.svc.DB.Table("vehicles").Select("latitude, longitude").Where("id = ?", vehicleID).Scan(&vhc)
+
+	// Query loading point coordinates and material
+	var loadPt LoadingPoint
+	a.svc.DB.First(&loadPt, loadPointID)
+
+	// Query dump point coordinates
+	var dumpPt LoadingPoint
+	a.svc.DB.First(&dumpPt, dumpPointID)
+
+	// Calculate road distances via route-service
+	loadDist, loadDur := a.getRouteDistance(vhc.Latitude, vhc.Longitude, loadPt.Latitude, loadPt.Longitude)
+	dumpDist, dumpDur := a.getRouteDistance(loadPt.Latitude, loadPt.Longitude, dumpPt.Latitude, dumpPt.Longitude)
+	totalDist := loadDist + dumpDist
+
+	// Assign loading point material to task
+	material := loadPt.Material
+
 	task := model.DispatchTask{
 		ID:          utils.NextID(),
 		VehicleID:   vehicleID,
 		LoadPointID: loadPointID,
 		DumpPointID: dumpPointID,
+		Material:    material,
+		LoadLat:     loadPt.Latitude,
+		LoadLon:     loadPt.Longitude,
+		DumpLat:     dumpPt.Latitude,
+		DumpLon:     dumpPt.Longitude,
 		Status:      model.StatusActive,
 		Algorithm:   "nearest_first",
 	}
 	if err := a.svc.DB.Create(&task).Error; err != nil {
 		return 0, err
 	}
-	// Publish dispatch event
-	msg := fmt.Sprintf(`{"task_id":%d,"vehicle_id":%d,"action":"assign"}`, task.ID, vehicleID)
+
+	// Publish dispatch event with distance info
+	msg := fmt.Sprintf(
+		`{"task_id":%d,"vehicle_id":%d,"action":"assign","load_dist_m":%.0f,"dump_dist_m":%.0f,"total_dist_m":%.0f,"load_dur_s":%.0f,"dump_dur_s":%.0f}`,
+		task.ID, vehicleID, loadDist, dumpDist, totalDist, loadDur, dumpDur,
+	)
 	a.svc.Redis.Publish(a.ctx, "dispatch:events", msg)
 	return task.ID, nil
+}
+
+func (a *NearestFirstAssigner) getRouteDistance(fromLat, fromLon, toLat, toLon float64) (float64, float64) {
+	if a.svc.RouteClient == nil {
+		d := haversine(fromLat, fromLon, toLat, toLon)
+		return d, (d / 1000) / 30 * 3600
+	}
+
+	ctx, cancel := context.WithTimeout(a.ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := a.svc.RouteClient.GetDistance(ctx, &routev1.GetDistanceRequest{
+		FromLat: fromLat,
+		FromLon: fromLon,
+		ToLat:   toLat,
+		ToLon:   toLon,
+	})
+	if err != nil || resp == nil || resp.Code != 0 {
+		d := haversine(fromLat, fromLon, toLat, toLon)
+		return d, (d / 1000) / 30 * 3600
+	}
+	return resp.DistanceM, resp.DurationS
+}
+
+// haversine computes great-circle distance in meters between two lat/lon points.
+func haversine(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371000
+	dLat := (lat2 - lat1) * math.Pi / 180
+	dLon := (lon2 - lon1) * math.Pi / 180
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(lat1*math.Pi/180)*math.Cos(lat2*math.Pi/180)*
+			math.Sin(dLon/2)*math.Sin(dLon/2)
+	return R * 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 }
