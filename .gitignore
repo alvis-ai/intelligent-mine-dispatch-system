@@ -31,3 +31,18 @@ web-admin/.vite/
 
 # Docker volumes
 deploy/docker/pgdata/
+
+# Build artifacts
+deploy/docker/build/
+
+# AI session / cache
+.agents/
+.claude/
+skills-lock.json
+package-lock.json
+
+# Screenshots
+*.png
+
+# Duplicated service deploy dir
+services/deploy/
