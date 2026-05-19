@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package ai.v1;
+
+option go_package = "github.com/aicong/mine-dispatch/proto/ai/v1;aiv1";
+
+// ── Congestion Prediction ──
+
+message PredictCongestionRequest {
+  uint64 mine_id = 1;
+  uint64 edge_id = 2;         // 0 = all edges
+  int32 lookback_minutes = 3; // default 60
+}
+
+message EdgeCongestion {
+  uint64 edge_id = 1;
+  uint64 from_node_id = 2;
+  uint64 to_node_id = 3;
+  double congestion_score = 4;  // 0.0 (clear) ~ 1.0 (congested)
+  double predicted_speed_kmh = 5;
+  int32 predicted_vehicle_count = 6;
+  double confidence = 7;        // 0.0 ~ 1.0
+}
+
+message PredictCongestionResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated EdgeCongestion data = 3;
+}
+
+// ── Route Recommendation ──
+
+message RecommendRouteRequest {
+  double from_lat = 1;
+  double from_lon = 2;
+  double to_lat = 3;
+  double to_lon = 4;
+  bool avoid_congestion = 5;
+  uint64 mine_id = 6;
+}
+
+message RoutePoint {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message AiRoutePath {
+  repeated RoutePoint points = 1;
+  repeated uint64 node_ids = 2;
+  repeated uint64 edge_ids = 3;
+  double total_distance_m = 4;
+  double total_duration_s = 5;
+}
+
+message RecommendRouteResponse {
+  int32 code = 1;
+  string message = 2;
+  AiRoutePath data = 3;
+}
+
+// ── Demand Prediction ──
+
+message PredictDemandRequest {
+  uint64 mine_id = 1;
+}
+
+message LoadingPointDemand {
+  uint64 load_point_id = 1;
+  string name = 2;
+  string point_type = 3;   // "loading" | "dumping"
+  string material = 4;
+  double demand_score = 5; // 0.0 ~ 1.0
+  int32 pending_task_count = 6;
+  int32 active_vehicle_count = 7;
+  double confidence = 8;
+}
+
+message PredictDemandResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated LoadingPointDemand data = 3;
+}
+
+// ── AI Suggest Assign ──
+
+message SuggestAssignRequest {
+  repeated AIVehicleInfo vehicles = 1;
+  repeated AITaskCandidate tasks = 2;
+  uint64 mine_id = 3;
+}
+
+message AIVehicleInfo {
+  uint64 vehicle_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  int32 active_task_count = 4;
+}
+
+message AITaskCandidate {
+  uint64 vehicle_id_hint = 1;  // proposed vehicle
+  uint64 load_point_id = 2;
+  uint64 dump_point_id = 3;
+}
+
+message AISuggestionItem {
+  uint64 vehicle_id = 1;
+  uint64 load_point_id = 2;
+  uint64 dump_point_id = 3;
+  double score = 4;
+  double estimated_distance_m = 5;
+  double estimated_duration_s = 6;
+  string reason = 7;
+}
+
+message SuggestAssignResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated AISuggestionItem suggestions = 3;
+}
+
+// ── Health ──
+
+message HealthCheckRequest {}
+message HealthCheckResponse {
+  string status = 1;
+}
+
+// ── Service ──
+
+service AiService {
+  rpc PredictCongestion(PredictCongestionRequest) returns (PredictCongestionResponse);
+  rpc RecommendRoute(RecommendRouteRequest) returns (RecommendRouteResponse);
+  rpc PredictDemand(PredictDemandRequest) returns (PredictDemandResponse);
+  rpc SuggestAssign(SuggestAssignRequest) returns (SuggestAssignResponse);
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}

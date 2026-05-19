@@ -8,5 +8,4 @@ type Config struct {
 	RedisAddr    string
 	RedisPass    string
 	RouteSvcAddr string
-	AiSvcAddr    string
 }

@@ -34,6 +34,8 @@ func (l *DispatchLogic) getAssigner(algo string) TaskAssigner {
 		return &NearestFirstAssigner{svc: l.svc, ctx: l.ctx}
 	case "genetic_algorithm":
 		return NewGeneticAlgorithmAssigner(l.ctx, l.svc)
+	case "ai_suggest":
+		return NewAISuggestAssigner(l.ctx, l.svc)
 	default:
 		return &FIFOAssigner{svc: l.svc}
 	}

@@ -34,6 +34,7 @@ type GatewayConfig struct {
 	DispatchSvcAddr  string
 	AlarmSvcAddr     string
 	RouteSvcAddr     string
+	AiSvcAddr        string
 	PostgresDSN      string
 }
 
@@ -87,6 +88,7 @@ func main() {
 	dispatchConn, _ := grpc.Dial(c.DispatchSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	alarmConn, _ := grpc.Dial(c.AlarmSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	routeConn, _ := grpc.Dial(c.RouteSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	aiConn, _ := grpc.Dial(c.AiSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	userClient := userv1.NewUserServiceClient(userConn)
 
@@ -115,6 +117,7 @@ func main() {
 	}
 	handler.RegisterAlarmRoutes(server, alarmConn)
 	handler.RegisterRouteRoutes(server, routeConn)
+	handler.RegisterAiRoutes(server, aiConn)
 	handler.RegisterManagementRoutes(server, mgmtDB)
 
 	fmt.Printf("Starting gateway on %s:%d\n", c.Host, c.Port)

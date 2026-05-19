@@ -123,6 +123,22 @@ services:
       postgres:
         condition: service_healthy
 
+  ai-service:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.service.local
+      args:
+        SERVICE: ai-service
+    command: ["-f", "/app/etc/ai-docker.yaml"]
+    ports:
+      - "8086:8086"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
   gateway:
     build:
       context: ../../
@@ -139,6 +155,7 @@ services:
       - dispatch-service
       - alarm-service
       - route-service
+      - ai-service
 
   web-admin:
     build:

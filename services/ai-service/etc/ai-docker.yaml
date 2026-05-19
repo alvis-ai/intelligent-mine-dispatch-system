@@ -1,9 +1,7 @@
-Name: dispatch-service
-ListenOn: 0.0.0.0:8085
-Mode: dev
+Name: ai-service
+ListenOn: 0.0.0.0:8086
 
 PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable
 RedisAddr: redis:6379
 RedisPass: ""
 RouteSvcAddr: route-service:8088
-AiSvcAddr: ai-service:8086

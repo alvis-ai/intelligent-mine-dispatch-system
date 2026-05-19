@@ -1,0 +1,11 @@
+ARG SERVICE
+
+FROM alpine:3.19
+RUN apk add --no-cache ca-certificates
+
+ARG SERVICE
+COPY deploy/docker/build/$SERVICE /app/service
+COPY deploy/docker/build/$SERVICE-config/ /app/etc/
+
+EXPOSE 8080
+ENTRYPOINT ["/app/service"]

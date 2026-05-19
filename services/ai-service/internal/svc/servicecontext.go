@@ -1,9 +1,10 @@
 package svc
 
 import (
+	"time"
+
 	routev1 "github.com/aicong/mine-dispatch/proto/route/v1"
-	aiv1 "github.com/aicong/mine-dispatch/proto/ai/v1"
-	"github.com/aicong/mine-dispatch/services/dispatch-service/internal/config"
+	"github.com/aicong/mine-dispatch/services/ai-service/internal/config"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -17,7 +18,6 @@ type ServiceContext struct {
 	DB          *gorm.DB
 	Redis       *redis.Client
 	RouteClient routev1.RouteServiceClient
-	AiClient    aiv1.AiServiceClient
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -27,6 +27,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	if err != nil {
 		panic(err)
 	}
+	sqlDB, _ := db.DB()
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     c.RedisAddr,
 		Password: c.RedisPass,
@@ -41,14 +46,5 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		routeClient = routev1.NewRouteServiceClient(conn)
 	}
 
-	var aiClient aiv1.AiServiceClient
-	if c.AiSvcAddr != "" {
-		conn, err := grpc.Dial(c.AiSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			panic(err)
-		}
-		aiClient = aiv1.NewAiServiceClient(conn)
-	}
-
-	return &ServiceContext{Config: c, DB: db, Redis: rdb, RouteClient: routeClient, AiClient: aiClient}
+	return &ServiceContext{Config: c, DB: db, Redis: rdb, RouteClient: routeClient}
 }

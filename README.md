@@ -47,6 +47,7 @@
 | **dispatch-service** | 8085 | 调度引擎 (多算法) |
 | **alarm-service** | 8087 | 电子围栏 & 实时告警 |
 | **route-service** | 8088 | 道路网络 & 最短路径规划 |
+| **ai-service** | 8086 | AI 拥堵预测 & 智能调度建议 |
 
 ## 调度算法
 
@@ -54,7 +55,9 @@
 - **Weighted Round Robin** — 加权轮询
 - **Nearest First** — 基于道路距离的最近优先（集成路线服务）
 - **Genetic Algorithm** — 遗传算法批量优化调度
+- **AI Suggest** — 基于拥堵/负载/距离多因子评分的 AI 调度建议
 - **Dijkstra / A\*** — 矿区道路最短路径（路线服务）
+- **AI Route** — 拥堵感知的 AI 加权路线推荐
 
 ## 前端页面 (9个)
 
@@ -112,6 +115,7 @@ cd services/dispatch-service && go test ./... -v -count=1
 ├── gateway/                 # API 网关
 │   └── internal/handler/    # REST 路由处理器
 ├── services/                # 微服务
+│   ├── ai-service/
 │   ├── alarm-service/
 │   ├── auth-service/
 │   ├── dispatch-service/
@@ -140,7 +144,9 @@ cd services/dispatch-service && go test ./... -v -count=1
 ```
 设备 GPS → Telemetry Service → Redis → WebSocket → 前端地图
                                    ↓
-                             Dispatch Service → 调度算法决策
+                             Dispatch Service → 调度算法决策 (含 AI)
+                                   ↓
+                             AI Service → 拥堵预测 / 需求预测 / 智能建议
                                    ↓
                              Route Service → 道路距离计算
                                    ↓
@@ -172,7 +178,7 @@ curl -X POST http://localhost:8080/api/v1/route/calculate \
 
 ```bash
 # 1. 交叉编译所有服务二进制
-for svc in gateway user-service auth-service vehicle-service telemetry-service dispatch-service alarm-service route-service; do
+for svc in gateway user-service auth-service vehicle-service telemetry-service dispatch-service alarm-service route-service ai-service; do
   if [ "$svc" = "gateway" ]; then
     cd gateway && GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o ../deploy/docker/build/gateway ./cmd && cd ..
   else

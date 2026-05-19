@@ -4,6 +4,7 @@ use (
 	./gateway
 	./pkg
 	./proto
+	./services/ai-service
 	./services/alarm-service
 	./services/auth-service
 	./services/route-service
