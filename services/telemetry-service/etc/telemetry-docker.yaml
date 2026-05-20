@@ -1,6 +1,9 @@
 Name: telemetry-service
 ListenOn: 0.0.0.0:8084
 Mode: dev
+DevServer:
+  Enabled: true
+  Port: 6060
 
 RedisAddr: redis:6379
 RedisPass: ""

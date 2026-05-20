@@ -139,6 +139,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  device-service:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.service.local
+      args:
+        SERVICE: device-service
+    command: ["-f", "/app/etc/device-docker.yaml"]
+    ports:
+      - "8089:8089"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   gateway:
     build:
       context: ../../
@@ -156,6 +169,7 @@ services:
       - alarm-service
       - route-service
       - ai-service
+      - device-service
 
   web-admin:
     build:
@@ -166,5 +180,34 @@ services:
     depends_on:
       - gateway
 
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+
 volumes:
   pgdata:
+  prometheus-data:
+  grafana-data:

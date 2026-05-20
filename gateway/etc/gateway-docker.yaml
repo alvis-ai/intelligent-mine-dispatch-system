@@ -2,6 +2,9 @@ Name: gateway
 Host: 0.0.0.0
 Port: 8080
 Mode: dev
+DevServer:
+  Enabled: true
+  Port: 6060
 RedisAddr: redis:6379
 RedisPass: ""
 AuthSvcAddr: auth-service:8082
@@ -12,4 +15,5 @@ DispatchSvcAddr: dispatch-service:8085
 AlarmSvcAddr: alarm-service:8087
 RouteSvcAddr: route-service:8088
 AiSvcAddr: ai-service:8086
+DeviceSvcAddr: device-service:8089
 PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable

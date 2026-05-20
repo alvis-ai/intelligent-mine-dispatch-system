@@ -169,6 +169,27 @@ INSERT INTO alarm_rules (id, name, rule_type, geofence_id, severity, description
     (6, '超速警告', 'speeding', 0, 'warning', '车速超过 60 km/h', TRUE)
 ON CONFLICT (id) DO NOTHING;
 
+-- ── IoT Devices ──
+
+CREATE TABLE IF NOT EXISTS devices (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    device_type INT DEFAULT 0,
+    status INT DEFAULT 1,
+    firmware_version VARCHAR(64) DEFAULT '',
+    latitude DOUBLE PRECISION DEFAULT 0,
+    longitude DOUBLE PRECISION DEFAULT 0,
+    mine_id BIGINT DEFAULT 0,
+    vehicle_id BIGINT DEFAULT 0,
+    last_online_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_devices_mine_id ON devices(mine_id);
+CREATE INDEX idx_devices_vehicle_id ON devices(vehicle_id);
+CREATE INDEX idx_devices_status ON devices(status);
+
 -- ── Road Network ──
 
 CREATE TABLE IF NOT EXISTS road_nodes (

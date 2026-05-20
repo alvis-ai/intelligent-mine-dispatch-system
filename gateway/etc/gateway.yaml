@@ -12,4 +12,5 @@ DispatchSvcAddr: localhost:8085
 AlarmSvcAddr: localhost:8087
 RouteSvcAddr: localhost:8088
 AiSvcAddr: localhost:8086
+DeviceSvcAddr: localhost:8089
 PostgresDSN: postgres://postgres:postgres@localhost:5432/mine_dispatch?sslmode=disable

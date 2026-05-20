@@ -1,6 +1,5 @@
-Name: vehicle-service
-ListenOn: 0.0.0.0:8083
-Mode: dev
+Name: device-service
+ListenOn: 0.0.0.0:8089
 DevServer:
   Enabled: true
   Port: 6060

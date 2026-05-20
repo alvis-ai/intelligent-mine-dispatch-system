@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package device.v1;
+
+option go_package = "github.com/aicong/mine-dispatch/proto/device/v1;devicev1";
+
+enum DeviceType {
+  DEVICE_TYPE_UNSPECIFIED = 0;
+  DEVICE_TYPE_GPS_TRACKER = 1;
+  DEVICE_TYPE_SPEED_SENSOR = 2;
+  DEVICE_TYPE_FUEL_SENSOR = 3;
+  DEVICE_TYPE_CAMERA = 4;
+  DEVICE_TYPE_WEIGHT_SENSOR = 5;
+}
+
+enum DeviceStatus {
+  DEVICE_STATUS_UNSPECIFIED = 0;
+  DEVICE_STATUS_ONLINE = 1;
+  DEVICE_STATUS_OFFLINE = 2;
+  DEVICE_STATUS_MAINTENANCE = 3;
+  DEVICE_STATUS_FAULT = 4;
+}
+
+message Device {
+  uint64 id = 1;
+  string name = 2;
+  DeviceType device_type = 3;
+  DeviceStatus status = 4;
+  string firmware_version = 5;
+  double latitude = 6;
+  double longitude = 7;
+  uint64 mine_id = 8;
+  uint64 vehicle_id = 9;
+  string last_online_at = 10;
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message CreateDeviceRequest {
+  string name = 1;
+  DeviceType device_type = 2;
+  uint64 mine_id = 3;
+  uint64 vehicle_id = 4;
+}
+
+message GetDeviceRequest { uint64 id = 1; }
+
+message UpdateDeviceRequest {
+  uint64 id = 1;
+  string name = 2;
+  DeviceStatus status = 3;
+  string firmware_version = 4;
+  uint64 vehicle_id = 5;
+}
+
+message DeleteDeviceRequest { uint64 id = 1; }
+
+message ListDeviceRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  DeviceType device_type = 3;
+  DeviceStatus status = 4;
+  uint64 mine_id = 5;
+  uint64 vehicle_id = 6;
+}
+
+message DeviceResponse {
+  int32 code = 1;
+  string message = 2;
+  Device data = 3;
+}
+
+message DeviceListResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated Device data = 3;
+  int64 total = 4;
+}
+
+service DeviceService {
+  rpc CreateDevice(CreateDeviceRequest) returns (DeviceResponse);
+  rpc GetDevice(GetDeviceRequest) returns (DeviceResponse);
+  rpc UpdateDevice(UpdateDeviceRequest) returns (DeviceResponse);
+  rpc DeleteDevice(DeleteDeviceRequest) returns (DeviceResponse);
+  rpc ListDevice(ListDeviceRequest) returns (DeviceListResponse);
+}

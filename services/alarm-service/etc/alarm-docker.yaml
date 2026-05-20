@@ -1,5 +1,8 @@
 Name: alarm-service
 ListenOn: 0.0.0.0:8087
+DevServer:
+  Enabled: true
+  Port: 6060
 
 PostgresDSN: postgres://postgres:postgres@postgres:5432/mine_dispatch?sslmode=disable
 RedisAddr: redis:6379

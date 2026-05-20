@@ -45,9 +45,10 @@
 | **vehicle-service** | 8083 | 车辆管理 (矿卡/挖机/铲车) |
 | **telemetry-service** | 8084 | GPS 实时定位 & WebSocket 广播 |
 | **dispatch-service** | 8085 | 调度引擎 (多算法) |
+| **ai-service** | 8086 | AI 拥堵预测 & 智能调度建议 |
 | **alarm-service** | 8087 | 电子围栏 & 实时告警 |
 | **route-service** | 8088 | 道路网络 & 最短路径规划 |
-| **ai-service** | 8086 | AI 拥堵预测 & 智能调度建议 |
+| **device-service** | 8089 | IoT 设备管理（GPS/传感器/摄像头） |
 
 ## 调度算法
 
@@ -118,6 +119,7 @@ cd services/dispatch-service && go test ./... -v -count=1
 │   ├── ai-service/
 │   ├── alarm-service/
 │   ├── auth-service/
+│   ├── device-service/
 │   ├── dispatch-service/
 │   ├── route-service/
 │   ├── telemetry-service/
@@ -178,7 +180,7 @@ curl -X POST http://localhost:8080/api/v1/route/calculate \
 
 ```bash
 # 1. 交叉编译所有服务二进制
-for svc in gateway user-service auth-service vehicle-service telemetry-service dispatch-service alarm-service route-service ai-service; do
+for svc in gateway user-service auth-service vehicle-service telemetry-service dispatch-service alarm-service route-service ai-service device-service; do
   if [ "$svc" = "gateway" ]; then
     cd gateway && GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o ../deploy/docker/build/gateway ./cmd && cd ..
   else

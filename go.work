@@ -7,6 +7,7 @@ use (
 	./services/ai-service
 	./services/alarm-service
 	./services/auth-service
+	./services/device-service
 	./services/route-service
 	./services/dispatch-service
 	./services/telemetry-service

@@ -10,6 +10,7 @@ import {
   BellOutlined,
   SecurityScanOutlined,
   LogoutOutlined,
+  BulbOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../stores/authStore';
 
@@ -24,6 +25,7 @@ const menuItems = [
   { key: '/tasks', icon: <ScheduleOutlined />, label: '调度任务' },
   { key: '/alarms', icon: <BellOutlined />, label: '告警中心' },
   { key: '/geofences', icon: <SecurityScanOutlined />, label: '电子围栏' },
+  { key: '/ai', icon: <BulbOutlined />, label: 'AI 智能分析' },
 ];
 
 export default function AppLayout() {
