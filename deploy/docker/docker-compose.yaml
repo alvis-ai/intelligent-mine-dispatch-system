@@ -152,6 +152,19 @@ services:
       postgres:
         condition: service_healthy
 
+  report-service:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.service.local
+      args:
+        SERVICE: report-service
+    command: ["-f", "/app/etc/report-docker.yaml"]
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   gateway:
     build:
       context: ../../
@@ -170,6 +183,7 @@ services:
       - route-service
       - ai-service
       - device-service
+      - report-service
 
   web-admin:
     build:

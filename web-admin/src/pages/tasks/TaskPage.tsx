@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Table, Card, Tag, Button, Typography, Modal, Select, Form, message, Space, Popconfirm,
 } from 'antd';
-import { PlusOutlined, CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined, BulbOutlined } from '@ant-design/icons';
+import { Drawer, Descriptions } from 'antd';
 import apiClient from '../../api/client';
+import { fetchSuggestions } from '../../services/aiService';
 
 interface TaskRecord {
   id: number;
@@ -37,6 +39,9 @@ export default function TaskPage() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestLoading, setSuggestLoading] = useState(false);
   const [form] = Form.useForm();
 
   const fetchTasks = useCallback(async () => {
@@ -185,6 +190,35 @@ export default function TaskPage() {
   const activeTasks = tasks.filter((t) => t.status === 'active').length;
   const pendingTasks = tasks.filter((t) => t.status === 'pending').length;
 
+  const openSuggestions = async () => {
+    setSuggestOpen(true);
+    setSuggestLoading(true);
+    try {
+      const vRes = await apiClient.get('/api/v1/vehicles');
+      const vehicles = (vRes.data.data || []).slice(0, 20).map((v: any) => ({
+        vehicle_id: v.id,
+        latitude: v.latitude || 39.9,
+        longitude: v.longitude || 116.4,
+        active_task_count: 0,
+      }));
+      const lpRes = await apiClient.get('/api/v1/loading-points');
+      const points = (lpRes.data.data || []).filter((p: any) => p.type === 'loading');
+      const candidates = points.map((p: any) => ({
+        load_point_id: p.id,
+        dump_point_id: points.find((x: any) => x.type === 'dumping')?.id || 3,
+      }));
+      if (candidates.length === 0) {
+        candidates.push({ load_point_id: 1, dump_point_id: 3 });
+      }
+      const sug = await fetchSuggestions(vehicles, candidates, 1);
+      setSuggestions(sug || []);
+    } catch {
+      message.error('获取 AI 建议失败');
+    } finally {
+      setSuggestLoading(false);
+    }
+  };
+
   return (
     <div>
       <Typography.Title level={4}>调度任务</Typography.Title>
@@ -197,6 +231,7 @@ export default function TaskPage() {
           </Space>
           <Space>
             <Button icon={<ReloadOutlined />} onClick={fetchTasks}>刷新</Button>
+            <Button icon={<BulbOutlined />} onClick={openSuggestions}>AI 建议</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
               创建调度任务
             </Button>
@@ -227,6 +262,41 @@ export default function TaskPage() {
           </Form.Item>
         </Form>
       </Modal>
+
+      <Drawer
+        title="AI 调度建议"
+        placement="right"
+        width={480}
+        open={suggestOpen}
+        onClose={() => setSuggestOpen(false)}
+        loading={suggestLoading}
+      >
+        {suggestions.length === 0 && !suggestLoading ? (
+          <Typography.Text type="secondary">暂无可用建议</Typography.Text>
+        ) : (
+          suggestions.map((s: any, i: number) => (
+            <Card key={i} size="small" style={{ marginBottom: 8 }}>
+              <Descriptions column={1} size="small">
+                <Descriptions.Item label="车辆">#{s.vehicle_id}</Descriptions.Item>
+                <Descriptions.Item label="装载点">#{s.load_point_id}</Descriptions.Item>
+                <Descriptions.Item label="卸载点">#{s.dump_point_id}</Descriptions.Item>
+                <Descriptions.Item label="评分">
+                  <Tag color={s.score > 0.8 ? 'green' : s.score > 0.6 ? 'orange' : 'red'}>
+                    {(s.score * 100).toFixed(0)}%
+                  </Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="距离">
+                  {(s.estimated_distance_m / 1000).toFixed(1)} km
+                </Descriptions.Item>
+                <Descriptions.Item label="时长">
+                  {Math.round(s.estimated_duration_s / 60)} min
+                </Descriptions.Item>
+                <Descriptions.Item label="原因">{s.reason}</Descriptions.Item>
+              </Descriptions>
+            </Card>
+          ))
+        )}
+      </Drawer>
     </div>
   );
 }

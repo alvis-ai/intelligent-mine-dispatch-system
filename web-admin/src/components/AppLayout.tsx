@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Typography } from 'antd';
+import { Layout, Menu, Button, Typography, Select } from 'antd';
 import {
   DashboardOutlined,
   CarOutlined,
@@ -11,8 +11,10 @@ import {
   SecurityScanOutlined,
   LogoutOutlined,
   BulbOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../stores/authStore';
+import { MINES, getCurrentMineId, setCurrentMineId, getCurrentMineName } from '../utils/mineContext';
 
 const { Header, Sider, Content } = Layout;
 
@@ -26,6 +28,7 @@ const menuItems = [
   { key: '/alarms', icon: <BellOutlined />, label: '告警中心' },
   { key: '/geofences', icon: <SecurityScanOutlined />, label: '电子围栏' },
   { key: '/ai', icon: <BulbOutlined />, label: 'AI 智能分析' },
+  { key: '/reports', icon: <BarChartOutlined />, label: 'BI 报表' },
 ];
 
 export default function AppLayout() {
@@ -60,6 +63,13 @@ export default function AppLayout() {
             borderBottom: '1px solid #f0f0f0',
           }}
         >
+          <Select
+            size="small"
+            style={{ width: 110, marginRight: 16 }}
+            value={getCurrentMineId()}
+            onChange={(v) => { setCurrentMineId(v); window.location.reload(); }}
+            options={MINES.map((m) => ({ value: m.id, label: m.name }))}
+          />
           <Typography.Text style={{ marginRight: 16 }}>
             {user?.realName || user?.username}
           </Typography.Text>

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Card, Typography, Tag, Space, Spin, Select, Drawer, Descriptions } from 'antd';
+import { Card, Typography, Tag, Space, Spin, Select, Drawer, Descriptions, Switch } from 'antd';
 import {
-  EnvironmentOutlined, CarOutlined, LoadingOutlined,
+  EnvironmentOutlined, CarOutlined, LoadingOutlined, FireOutlined,
 } from '@ant-design/icons';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 import apiClient from '../../api/client';
+import { fetchCongestion } from '../../services/aiService';
 
 // ── Types ──
 
@@ -78,7 +80,9 @@ export default function MapPage() {
   const roadNodeLayer = useRef<L.LayerGroup>(L.layerGroup());
   const roadEdgeLayer = useRef<L.LayerGroup>(L.layerGroup());
   const routeLayer = useRef<L.LayerGroup>(L.layerGroup());
+  const heatLayer = useRef<L.Layer | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const [heatEnabled, setHeatEnabled] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [vehicles, setVehicles] = useState<VehicleMarker[]>([]);
@@ -108,6 +112,9 @@ export default function MapPage() {
     roadEdgeLayer.current.addTo(map);
     routeLayer.current.addTo(map);
     mapInstance.current = map;
+
+    // Pre-add empty heat layer
+    heatLayer.current = L.heatLayer([], { radius: 30, blur: 20, maxZoom: 17 }).addTo(map);
 
     return () => {
       map.remove();
@@ -270,6 +277,42 @@ export default function MapPage() {
     };
   }, [updateVehicleMarkers]);
 
+  // ── Toggle heatmap ──
+
+  const toggleHeatmap = useCallback(async (enabled: boolean) => {
+    setHeatEnabled(enabled);
+    if (!enabled) {
+      // Clear heatmap
+      const map = mapInstance.current;
+      if (map && heatLayer.current) {
+        map.removeLayer(heatLayer.current);
+        heatLayer.current = null;
+      }
+      return;
+    }
+    // Show loading state, then fetch and render congestion
+    const data = await fetchCongestion(1, 60);
+    if (!data || data.length === 0) return;
+    const points: [number, number, number][] = data.map((c: any) => [
+      // Use edge midpoint approximate: from/to average
+      c.latitude || 39.9,
+      c.longitude || 116.4,
+      Math.min(c.congestion_score * 2, 1),
+    ]);
+    const map = mapInstance.current;
+    if (!map) return;
+    // Remove old heat layer if exists
+    if (heatLayer.current) {
+      map.removeLayer(heatLayer.current);
+    }
+    heatLayer.current = L.heatLayer(points.length > 0 ? points : [[39.906, 116.407, 0]], {
+      radius: 30,
+      blur: 20,
+      maxZoom: 17,
+      gradient: { 0.3: 'green', 0.5: 'orange', 0.8: 'red' },
+    }).addTo(map);
+  }, []);
+
   // ── Initial load ──
 
   useEffect(() => {
@@ -345,6 +388,11 @@ export default function MapPage() {
           <EnvironmentOutlined /> 实时地图
         </Typography.Title>
         <Space>
+          <Space>
+            <FireOutlined style={{ color: heatEnabled ? '#cf1322' : undefined }} />
+            <Switch checked={heatEnabled} onChange={toggleHeatmap} size="small" />
+            <Typography.Text type="secondary">拥堵热力</Typography.Text>
+          </Space>
           <Select
             size="small"
             style={{ width: 140 }}

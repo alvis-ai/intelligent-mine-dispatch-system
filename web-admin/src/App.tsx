@@ -12,6 +12,7 @@ import VehicleTypePage from './pages/vehicletypes/VehicleTypePage';
 import AlarmCenterPage from './pages/alarms/AlarmCenterPage';
 import GeofencePage from './pages/geofences/GeofencePage';
 import AiInsightsPage from './pages/ai/AiInsightsPage';
+import ReportPage from './pages/reports/ReportPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token');
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="alarms" element={<AlarmCenterPage />} />
             <Route path="geofences" element={<GeofencePage />} />
             <Route path="ai" element={<AiInsightsPage />} />
+            <Route path="reports" element={<ReportPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

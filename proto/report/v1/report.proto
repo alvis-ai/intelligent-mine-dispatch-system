@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package report.v1;
+
+option go_package = "github.com/aicong/mine-dispatch/proto/report/v1;reportv1";
+
+message DashboardSummaryRequest { int64 mine_id = 1; }
+
+message DashboardSummaryResponse {
+  int32 total_vehicles = 1;
+  int32 active_tasks = 2;
+  int32 completed_tasks = 3;
+  int32 pending_tasks = 4;
+  int32 unacknowledged_critical = 5;
+  int32 unacknowledged_warning = 6;
+  int32 today_dispatched = 7;
+  string last_updated = 8;
+}
+
+message DispatchReportRequest {
+  int64 mine_id = 1;
+  string start_date = 2; // YYYY-MM-DD
+  string end_date = 3;   // YYYY-MM-DD
+  string group_by = 4;   // "day" | "algorithm" | "status"
+}
+
+message DispatchReportRow {
+  string dimension = 1;
+  int32 total = 2;
+  int32 completed = 3;
+  int32 cancelled = 4;
+  int32 active = 5;
+  double avg_duration_minutes = 6;
+}
+
+message DispatchReportResponse { repeated DispatchReportRow rows = 1; }
+
+message VehicleUtilizationRequest {
+  int64 mine_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message VehicleUtilRow {
+  int64 vehicle_id = 1;
+  string plate = 2;
+  int64 total_tasks = 3;
+  int64 completed_tasks = 4;
+  double utilization_rate = 5;
+}
+
+message VehicleUtilizationResponse { repeated VehicleUtilRow rows = 1; }
+
+message TransportVolumeRequest {
+  int64 mine_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message TransportVolumeRow {
+  string material = 1;
+  int64 task_count = 2;
+  int64 loading_point_id = 3;
+  string loading_point_name = 4;
+}
+
+message TransportVolumeResponse { repeated TransportVolumeRow rows = 1; }
+
+message AlarmTrendRequest {
+  int64 mine_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message AlarmTrendRow {
+  string date = 1;
+  string severity = 2;
+  int64 count = 3;
+}
+
+message AlarmTrendResponse { repeated AlarmTrendRow rows = 1; }
+
+service ReportService {
+  rpc GetDashboardSummary(DashboardSummaryRequest) returns (DashboardSummaryResponse);
+  rpc GetDispatchReport(DispatchReportRequest) returns (DispatchReportResponse);
+  rpc GetVehicleUtilization(VehicleUtilizationRequest) returns (VehicleUtilizationResponse);
+  rpc GetTransportVolume(TransportVolumeRequest) returns (TransportVolumeResponse);
+  rpc GetAlarmTrend(AlarmTrendRequest) returns (AlarmTrendResponse);
+}

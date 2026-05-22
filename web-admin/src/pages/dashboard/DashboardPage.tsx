@@ -4,7 +4,10 @@ import {
   CarOutlined, CheckCircleOutlined, ClockCircleOutlined, WarningOutlined,
   FireOutlined,
 } from '@ant-design/icons';
+import { Column } from '@ant-design/charts';
 import apiClient from '../../api/client';
+import { fetchDemand } from '../../services/aiService';
+import { getCurrentMineId } from '../../utils/mineContext';
 
 interface TaskRecord {
   id: number;
@@ -25,6 +28,7 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [alarmStats, setAlarmStats] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const [demandData, setDemandData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -37,6 +41,8 @@ export default function DashboardPage() {
         setVehicles(vRes.data.data || []);
         setTasks(tRes.data.data || []);
         setAlarmStats(aRes.data.data || {});
+        const dem = await fetchDemand(getCurrentMineId());
+        setDemandData((dem || []).map((d: any) => ({ ...d, demandPct: (d.demand_score * 100).toFixed(0) })));
       } catch {
         // use defaults
       } finally {
@@ -123,6 +129,24 @@ export default function DashboardPage() {
           size="small"
         />
       </Card>
+
+      {demandData.length > 0 && (
+        <Card title="作业点需求趋势" size="small" style={{ marginTop: 16 }}>
+          <Column
+            data={demandData}
+            xField="name"
+            yField="demand_score"
+            color={({ demand_score }: any) =>
+              demand_score > 0.6 ? '#cf1322' : demand_score > 0.3 ? '#faad14' : '#52c41a'
+            }
+            height={250}
+            xAxis={{ label: { autoRotate: true } }}
+            yAxis={{
+              label: { formatter: (v: string) => (parseFloat(v) * 100).toFixed(0) + '%' },
+            }}
+          />
+        </Card>
+      )}
     </div>
   );
 }

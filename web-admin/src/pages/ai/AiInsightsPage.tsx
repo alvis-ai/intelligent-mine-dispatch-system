@@ -6,6 +6,7 @@ import {
 import type {
   EdgeCongestion, LoadingPointDemand, AISuggestion,
 } from '../../services/aiService';
+import { getCurrentMineId } from '../../utils/mineContext';
 
 const CONGESTION_COLOR = (score: number) => {
   if (score > 0.6) return 'red';
@@ -29,9 +30,10 @@ export default function AiInsightsPage() {
     const fetch = async () => {
       setLoading(true);
       try {
+        const mineId = getCurrentMineId();
         const [cong, dem] = await Promise.all([
-          fetchCongestion(1, 60),
-          fetchDemand(1),
+          fetchCongestion(mineId, 60),
+          fetchDemand(mineId),
         ]);
         setCongestion(cong);
         setDemand(dem);

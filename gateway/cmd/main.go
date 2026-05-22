@@ -27,16 +27,17 @@ type GatewayConfig struct {
 	rest.RestConf
 	RedisAddr    string
 	RedisPass    string
-	AuthSvcAddr  string
-	UserSvcAddr      string
-	VehicleSvcAddr   string
-	TelemetrySvcAddr string
-	DispatchSvcAddr  string
-	AlarmSvcAddr     string
-	RouteSvcAddr     string
-	AiSvcAddr        string
-	DeviceSvcAddr    string
-	PostgresDSN      string
+	AuthSvcAddr       string
+	UserSvcAddr       string
+	VehicleSvcAddr    string
+	TelemetrySvcAddr  string
+	DispatchSvcAddr   string
+	AlarmSvcAddr      string
+	RouteSvcAddr      string
+	AiSvcAddr         string
+	DeviceSvcAddr     string
+	ReportSvcAddr     string
+	PostgresDSN       string
 }
 
 func proxyHandler(targetURL string) http.HandlerFunc {
@@ -91,6 +92,7 @@ func main() {
 	routeConn, _ := grpc.Dial(c.RouteSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	aiConn, _ := grpc.Dial(c.AiSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	deviceConn, _ := grpc.Dial(c.DeviceSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	reportConn, _ := grpc.Dial(c.ReportSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	userClient := userv1.NewUserServiceClient(userConn)
 
@@ -121,6 +123,7 @@ func main() {
 	handler.RegisterRouteRoutes(server, routeConn)
 	handler.RegisterAiRoutes(server, aiConn)
 	handler.RegisterDeviceRoutes(server, deviceConn)
+	handler.RegisterReportRoutes(server, reportConn)
 	handler.RegisterManagementRoutes(server, mgmtDB)
 
 	fmt.Printf("Starting gateway on %s:%d\n", c.Host, c.Port)

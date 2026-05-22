@@ -6,6 +6,7 @@ use (
 	./proto
 	./services/ai-service
 	./services/alarm-service
+	./services/report-service
 	./services/auth-service
 	./services/device-service
 	./services/route-service
