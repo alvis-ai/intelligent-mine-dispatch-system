@@ -215,10 +215,10 @@ cd deploy/docker && docker compose -f docker-compose.source.yaml up -d --build
 - [x] CI/CD 流水线
 - [x] Docker 容器化部署
 
-### Phase 3 — 企业版 🚧
-- [ ] AI 调度 / 拥堵预测 (ai-service)
-- [ ] IoT 设备管理 (device-service)
-- [ ] BI 报表分析 (report-service)
+### Phase 3 — 企业版 ✅
+- [x] AI 调度 / 拥堵预测 (ai-service)
+- [x] IoT 设备管理 (device-service)
+- [x] BI 报表分析 (report-service)
 - [ ] 语音调度 (voice-service)
 - [ ] 多租户 / 多矿区
 
